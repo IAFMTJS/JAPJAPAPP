@@ -18,6 +18,7 @@ function App() {
   const { setCurrentSection } = useStore();
 
   // Navigation history for backspace functionality
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [navigationHistory, setNavigationHistory] = React.useState<string[]>(['home']);
 
   // iOS audio optimization - enable audio after user interaction

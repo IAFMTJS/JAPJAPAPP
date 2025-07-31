@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useStore, useProgress } from '../../store/useStore';
 import { Exercise, ExerciseType } from '../../types';
 import { hiraganaData } from '../../data/hiragana';
@@ -295,7 +295,7 @@ const QuizScreen: React.FC = () => {
     }
   };
 
-  const finishQuiz = () => {
+  const finishQuiz = useCallback(() => {
     const finalScore = (score / totalQuestions) * 100;
     const timeTaken = 300 - timeLeft;
     
@@ -327,7 +327,7 @@ const QuizScreen: React.FC = () => {
     addPracticeSession(practiceSession);
     addXP(Math.floor(finalScore / 10));
     setIsQuizActive(false);
-  };
+  }, [score, totalQuestions, timeLeft, mistakes, selectedCategory, currentExercise, addQuizResult, addPracticeSession, addXP, setIsQuizActive]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
