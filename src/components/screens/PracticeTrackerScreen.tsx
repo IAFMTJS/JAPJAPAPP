@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useStore, useProgress } from '../../store/useStore';
-import { PracticeSession } from '../../types';
 
 const PracticeTrackerScreen: React.FC = () => {
   const progress = useProgress();

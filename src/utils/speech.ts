@@ -146,24 +146,7 @@ export const getBestJapaneseVoice = (voices: SpeechSynthesisVoice[]) => {
   return japaneseVoice || null;
 };
 
-/**
- * Retry speech synthesis with fallback settings for iOS
- */
-const retryWithFallbackSettings = (text: string) => {
-  setTimeout(() => {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'ja-JP';
-    utterance.rate = 0.9; // Faster rate
-    utterance.volume = 0.8; // Lower volume
-    utterance.pitch = 0.9; // Lower pitch
-    
-    utterance.onerror = (event) => {
-      console.warn('Fallback speech synthesis also failed:', event.error);
-    };
-    
-    speechSynthesis.speak(utterance);
-  }, 200);
-};
+
 
 /**
  * Get the best available Japanese voice (legacy function)

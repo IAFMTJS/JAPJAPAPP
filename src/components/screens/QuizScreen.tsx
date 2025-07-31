@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useStore, useProgress } from '../../store/useStore';
 import { Exercise, ExerciseType } from '../../types';
-import { hiraganaData, getHiraganaByCategory } from '../../data/hiragana';
-import { katakanaData, getKatakanaByCategory } from '../../data/katakana';
-import { kanjiData, getKanjiByCategory } from '../../data/kanji';
+import { hiraganaData } from '../../data/hiragana';
+import { katakanaData } from '../../data/katakana';
+import { kanjiData } from '../../data/kanji';
 import { speakJapanese } from '../../utils/speech';
 
 const QuizScreen: React.FC = () => {
@@ -268,20 +268,20 @@ const QuizScreen: React.FC = () => {
 
     // Update progress tracking
     if (currentExercise) {
-      let characterId = '';
-      if (currentExercise.question.includes('romaji')) {
-        characterId = currentExercise.question.split(' ').pop()?.replace('?', '') || '';
-      } else if (currentExercise.question.includes('meaning of')) {
-        characterId = currentExercise.question.split('meaning of ')[1]?.split('?')[0] || '';
-      } else if (currentExercise.question.includes('particle')) {
-        characterId = Array.isArray(currentExercise.correctAnswer) 
-          ? currentExercise.correctAnswer[0] 
-          : currentExercise.correctAnswer;
-      }
+      // Progress tracking commented out for now
+      // let characterId = '';
+      // if (currentExercise.question.includes('romaji')) {
+      //   characterId = currentExercise.question.split(' ').pop()?.replace('?', '') || '';
+      // } else if (currentExercise.question.includes('meaning of')) {
+      //   characterId = currentExercise.question.split('meaning of ')[1]?.split('?')[0] || '';
+      // } else if (currentExercise.question.includes('particle')) {
+      //   characterId = Array.isArray(currentExercise.correctAnswer) 
+      //     ? currentExercise.correctAnswer[0] 
+      //     : currentExercise.correctAnswer;
+      // }
 
-      const category = selectedCategory === 'mixed' ? 'hiragana' : selectedCategory;
-      // Ensure isCorrect is a boolean before passing to updateProgress
-      const correct = !!isCorrect;
+      // const category = selectedCategory === 'mixed' ? 'hiragana' : selectedCategory;
+      // const correct = !!isCorrect;
       // updateProgress(category as any, characterId, correct, correct, 30); // 30 seconds per question
     }
   };
@@ -340,7 +340,7 @@ const QuizScreen: React.FC = () => {
       }, 1000);
     }
     return () => clearTimeout(timer);
-  }, [isQuizActive, timeLeft]);
+  }, [isQuizActive, timeLeft, finishQuiz]);
 
   const speakCharacter = (text: string) => {
     speakJapanese(text);

@@ -10,7 +10,6 @@ const GrammarScreen: React.FC = () => {
   const [selectedTopic, setSelectedTopic] = useState<string>('particles');
   const [selectedParticle, setSelectedParticle] = useState<GrammarParticle | null>(null);
   const [selectedPattern, setSelectedPattern] = useState<GrammarPattern | null>(null);
-  const [showExamples, setShowExamples] = useState(false);
 
   const grammarTopics: GrammarTopic[] = [
     {
@@ -150,14 +149,12 @@ const GrammarScreen: React.FC = () => {
   const handleParticleClick = (particle: GrammarParticle) => {
     setSelectedParticle(particle);
     setSelectedPattern(null);
-    setShowExamples(true);
     addXP(2);
   };
 
   const handlePatternClick = (pattern: GrammarPattern) => {
     setSelectedPattern(pattern);
     setSelectedParticle(null);
-    setShowExamples(true);
     addXP(2);
   };
 
@@ -371,7 +368,7 @@ const GrammarScreen: React.FC = () => {
                   </div>
                   
                   <button
-                    onClick={() => setShowExamples(false)}
+                    onClick={() => setSelectedParticle(null)}
                     className="w-full btn-modern text-lg py-3"
                   >
                     Practice This Particle
@@ -400,7 +397,7 @@ const GrammarScreen: React.FC = () => {
                   </div>
                   
                   <button
-                    onClick={() => setShowExamples(false)}
+                    onClick={() => setSelectedPattern(null)}
                     className="w-full btn-modern text-lg py-3"
                   >
                     Practice This Pattern
