@@ -1,6 +1,10 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { User, Progress, AudioSettings, QuizResult, PracticeSession, DailyStats } from '../types';
+import { 
+  User, Progress, AudioSettings, QuizResult, PracticeSession, DailyStats,
+  AIRecommendation, Achievement, Badge, GameState, LearningPath, AIInsights,
+  EmotionalState, PredictiveAnalytics
+} from '../types';
 
 interface AppState {
   // User and Authentication
@@ -11,7 +15,7 @@ interface AppState {
   progress: Progress;
   
   // UI State
-  currentSection: 'home' | 'hiragana' | 'katakana' | 'kanji' | 'kanji-flashcards' | 'grammar' | 'quiz' | 'tracker' | 'profile';
+  currentSection: 'home' | 'hiragana' | 'katakana' | 'kanji' | 'kanji-flashcards' | 'grammar' | 'quiz' | 'tracker' | 'profile' | 'social' | 'vr' | 'ar' | 'ai-tutor' | 'gamification' | 'exercises';
   currentLesson: string | null;
   currentExercise: number;
   
@@ -24,6 +28,19 @@ interface AppState {
   
   // Mascot State
   mascotAnimation: 'idle' | 'happy' | 'sad' | 'thinking' | 'celebration';
+  
+  // AI Learning Engine
+  aiRecommendations: AIRecommendation[];
+  aiInsights: AIInsights;
+  learningPath: LearningPath;
+  emotionalState: EmotionalState;
+  predictiveAnalytics: PredictiveAnalytics;
+  
+  // Gamification
+  gameState: GameState;
+  achievements: Achievement[];
+  badges: Badge[];
+  challenges: any[];
   
   // Actions
   migrateData: () => void;
@@ -42,6 +59,20 @@ interface AppState {
   addXP: (amount: number) => void;
   incrementStreak: () => void;
   resetStreak: () => void;
+  
+  // AI Learning Engine Actions
+  addAIRecommendation: (recommendation: AIRecommendation) => void;
+  updateAIInsights: (insights: Partial<AIInsights>) => void;
+  updateLearningPath: (path: Partial<LearningPath>) => void;
+  updateEmotionalState: (state: Partial<EmotionalState>) => void;
+  updatePredictiveAnalytics: (analytics: Partial<PredictiveAnalytics>) => void;
+  
+  // Gamification Actions
+  addAchievement: (achievement: Achievement) => void;
+  addBadge: (badge: Badge) => void;
+  updateGameState: (gameState: Partial<GameState>) => void;
+  addChallenge: (challenge: any) => void;
+  completeChallenge: (challengeId: string) => void;
 }
 
 const defaultUser: User = {
@@ -78,6 +109,68 @@ const defaultAudioSettings: AudioSettings = {
   voice: 'ja-JP',
 };
 
+const defaultAIInsights: AIInsights = {
+  learningStyle: 'mixed',
+  strengths: [],
+  weaknesses: [],
+  recommendations: [],
+  predictedCompletionDate: new Date(),
+  confidenceLevel: 0,
+  studyOptimization: {
+    bestStudyTime: '09:00',
+    optimalSessionLength: 25,
+    recommendedBreaks: 5,
+    focusAreas: [],
+    reviewSchedule: {
+      intervals: [1, 3, 7, 14, 30],
+      characters: [],
+      nextReview: new Date()
+    }
+  }
+};
+
+const defaultLearningPath: LearningPath = {
+  currentModule: 'hiragana',
+  modules: ['hiragana', 'katakana', 'kanji', 'grammar'],
+  completedModules: [],
+  nextModule: 'hiragana',
+};
+
+const defaultEmotionalState: EmotionalState = {
+  mood: 'neutral',
+  energy: 'medium',
+  focus: 'focused',
+  stress: 'low',
+  confidence: 50,
+  motivation: 50,
+  lastUpdated: new Date(),
+};
+
+const defaultPredictiveAnalytics: PredictiveAnalytics = {
+  nextPractice: new Date().toISOString(),
+  recommendedModules: [],
+  predictedAccuracy: 0,
+  estimatedCompletionTime: 0,
+  forgettingCurve: [],
+  optimalStudyTimes: [],
+  burnoutRisk: 0,
+  successProbability: 0,
+};
+
+const defaultGameState: GameState = {
+  currentLevel: 1,
+  currentXP: 0,
+  streak: 0,
+  achievementsUnlocked: [],
+  badgesEarned: [],
+  challengesCompleted: [],
+  coins: 0,
+  gems: 0,
+  streakProtectionItems: 0,
+  streakProtected: false,
+  lessonsCompleted: 0,
+};
+
 export const useStore = create<AppState>()(
   persist(
     (set, get) => ({
@@ -92,6 +185,19 @@ export const useStore = create<AppState>()(
       currentQuiz: null,
       quizResults: [],
       mascotAnimation: 'idle',
+
+      // AI Learning Engine State
+      aiRecommendations: [],
+      aiInsights: defaultAIInsights,
+      learningPath: defaultLearningPath,
+      emotionalState: defaultEmotionalState,
+      predictiveAnalytics: defaultPredictiveAnalytics,
+
+      // Gamification State
+      gameState: defaultGameState,
+      achievements: [],
+      badges: [],
+      challenges: [],
 
       // Migration function to fix corrupted data
       migrateData: () => {
@@ -344,6 +450,62 @@ export const useStore = create<AppState>()(
           };
         });
       },
+
+      // AI Learning Engine Actions
+      addAIRecommendation: (recommendation) => {
+        set((state) => ({
+          aiRecommendations: [...state.aiRecommendations, recommendation],
+        }));
+      },
+      updateAIInsights: (insights) => {
+        set((state) => ({
+          aiInsights: { ...state.aiInsights, ...insights },
+        }));
+      },
+      updateLearningPath: (path) => {
+        set((state) => ({
+          learningPath: { ...state.learningPath, ...path },
+        }));
+      },
+      updateEmotionalState: (state) => {
+        set((state) => ({
+          emotionalState: { ...state.emotionalState, ...state },
+        }));
+      },
+      updatePredictiveAnalytics: (analytics) => {
+        set((state) => ({
+          predictiveAnalytics: { ...state.predictiveAnalytics, ...analytics },
+        }));
+      },
+
+      // Gamification Actions
+      addAchievement: (achievement) => {
+        set((state) => ({
+          achievements: [...state.achievements, achievement],
+        }));
+      },
+      addBadge: (badge) => {
+        set((state) => ({
+          badges: [...state.badges, badge],
+        }));
+      },
+      updateGameState: (gameState) => {
+        set((state) => ({
+          gameState: { ...state.gameState, ...gameState },
+        }));
+      },
+      addChallenge: (challenge) => {
+        set((state) => ({
+          challenges: [...state.challenges, challenge],
+        }));
+      },
+      completeChallenge: (challengeId) => {
+        set((state) => ({
+          challenges: state.challenges.map(challenge => 
+            challenge.id === challengeId ? { ...challenge, completed: true } : challenge
+          ),
+        }));
+      },
     }),
     {
       name: 'japjap-storage',
@@ -352,6 +514,17 @@ export const useStore = create<AppState>()(
         progress: state.progress,
         audioSettings: state.audioSettings,
         quizResults: state.quizResults,
+        // AI Learning Engine
+        aiRecommendations: state.aiRecommendations,
+        aiInsights: state.aiInsights,
+        learningPath: state.learningPath,
+        emotionalState: state.emotionalState,
+        predictiveAnalytics: state.predictiveAnalytics,
+        // Gamification
+        gameState: state.gameState,
+        achievements: state.achievements,
+        badges: state.badges,
+        challenges: state.challenges,
       }),
       onRehydrateStorage: () => (state) => {
         // Run migration when store is rehydrated

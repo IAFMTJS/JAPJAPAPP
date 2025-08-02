@@ -68,7 +68,16 @@ const QuizScreen: React.FC = () => {
           question: `What is the romaji for ${randomChar.character}?`,
           correctAnswer: randomChar.romaji,
           explanation: `${randomChar.character} is pronounced "${randomChar.romaji}"`,
-          audio: randomChar.audio
+          audio: randomChar.audio,
+          difficulty: 'easy',
+          category: 'hiragana',
+          tags: ['basic', 'pronunciation'],
+          hints: ['Think about the sound'],
+          points: 10,
+          aiGenerated: false,
+          userRating: 0,
+          usageCount: 0,
+          successRate: 0
         };
       case 'multiple-choice':
         const options = [randomChar.romaji];
@@ -85,7 +94,16 @@ const QuizScreen: React.FC = () => {
           options: options.sort(() => Math.random() - 0.5),
           correctAnswer: randomChar.romaji,
           explanation: `${randomChar.character} is pronounced "${randomChar.romaji}"`,
-          audio: randomChar.audio
+          audio: randomChar.audio,
+          difficulty: 'easy',
+          category: 'hiragana',
+          tags: ['basic', 'pronunciation'],
+          hints: ['Think about the sound'],
+          points: 10,
+          aiGenerated: false,
+          userRating: 0,
+          usageCount: 0,
+          successRate: 0
         };
       default:
         return {
@@ -94,7 +112,16 @@ const QuizScreen: React.FC = () => {
           question: `What is the romaji for ${randomChar.character}?`,
           correctAnswer: randomChar.romaji,
           explanation: `${randomChar.character} is pronounced "${randomChar.romaji}"`,
-          audio: randomChar.audio
+          audio: randomChar.audio,
+          difficulty: 'easy',
+          category: 'hiragana',
+          tags: ['basic', 'pronunciation'],
+          hints: ['Think about the sound'],
+          points: 10,
+          aiGenerated: false,
+          userRating: 0,
+          usageCount: 0,
+          successRate: 0
         };
     }
   };
@@ -111,7 +138,16 @@ const QuizScreen: React.FC = () => {
           question: `What is the romaji for ${randomChar.character}?`,
           correctAnswer: randomChar.romaji,
           explanation: `${randomChar.character} is pronounced "${randomChar.romaji}"`,
-          audio: randomChar.audio
+          audio: randomChar.audio,
+          difficulty: 'easy',
+          category: 'katakana',
+          tags: ['basic', 'pronunciation'],
+          hints: ['Think about the sound'],
+          points: 10,
+          aiGenerated: false,
+          userRating: 0,
+          usageCount: 0,
+          successRate: 0
         };
       case 'multiple-choice':
         const options = [randomChar.romaji];
@@ -128,7 +164,16 @@ const QuizScreen: React.FC = () => {
           options: options.sort(() => Math.random() - 0.5),
           correctAnswer: randomChar.romaji,
           explanation: `${randomChar.character} is pronounced "${randomChar.romaji}"`,
-          audio: randomChar.audio
+          audio: randomChar.audio,
+          difficulty: 'easy',
+          category: 'katakana',
+          tags: ['basic', 'pronunciation'],
+          hints: ['Think about the sound'],
+          points: 10,
+          aiGenerated: false,
+          userRating: 0,
+          usageCount: 0,
+          successRate: 0
         };
       default:
         return {
@@ -137,7 +182,16 @@ const QuizScreen: React.FC = () => {
           question: `What is the romaji for ${randomChar.character}?`,
           correctAnswer: randomChar.romaji,
           explanation: `${randomChar.character} is pronounced "${randomChar.romaji}"`,
-          audio: randomChar.audio
+          audio: randomChar.audio,
+          difficulty: 'easy',
+          category: 'katakana',
+          tags: ['basic', 'pronunciation'],
+          hints: ['Think about the sound'],
+          points: 10,
+          aiGenerated: false,
+          userRating: 0,
+          usageCount: 0,
+          successRate: 0
         };
     }
   };
@@ -154,7 +208,16 @@ const QuizScreen: React.FC = () => {
            question: `What is the meaning of ${randomChar.character}?`,
            correctAnswer: randomChar.meaning,
            explanation: `${randomChar.character} means "${randomChar.meaning}" (${randomChar.onyomi}/${randomChar.kunyomi})`,
-           audio: randomChar.onyomi
+           audio: randomChar.onyomi,
+           difficulty: 'medium',
+           category: 'kanji',
+           tags: ['meaning', 'vocabulary'],
+           hints: ['Think about the character shape'],
+           points: 15,
+           aiGenerated: false,
+           userRating: 0,
+           usageCount: 0,
+           successRate: 0
          };
       case 'multiple-choice':
         const meanings = ['one', 'two', 'three', 'mountain', 'water', 'fire', 'person', 'time', 'day', 'year'];
@@ -172,7 +235,16 @@ const QuizScreen: React.FC = () => {
            options: options.sort(() => Math.random() - 0.5),
            correctAnswer: randomChar.meaning,
            explanation: `${randomChar.character} means "${randomChar.meaning}" (${randomChar.onyomi}/${randomChar.kunyomi})`,
-           audio: randomChar.onyomi
+           audio: randomChar.onyomi,
+           difficulty: 'medium',
+           category: 'kanji',
+           tags: ['meaning', 'vocabulary'],
+           hints: ['Think about the character shape'],
+           points: 15,
+           aiGenerated: false,
+           userRating: 0,
+           usageCount: 0,
+           successRate: 0
          };
              default:
          return {
@@ -181,7 +253,16 @@ const QuizScreen: React.FC = () => {
            question: `What is the meaning of ${randomChar.character}?`,
            correctAnswer: randomChar.meaning,
            explanation: `${randomChar.character} means "${randomChar.meaning}" (${randomChar.onyomi}/${randomChar.kunyomi})`,
-           audio: randomChar.onyomi
+           audio: randomChar.onyomi,
+           difficulty: 'medium',
+           category: 'kanji',
+           tags: ['meaning', 'vocabulary'],
+           hints: ['Think about the character shape'],
+           points: 15,
+           aiGenerated: false,
+           userRating: 0,
+           usageCount: 0,
+           successRate: 0
          };
     }
   };
@@ -214,7 +295,16 @@ const QuizScreen: React.FC = () => {
        options: ['は', 'を', 'に', 'で'].sort(() => Math.random() - 0.5),
        correctAnswer: randomQuestion.correctAnswer,
        explanation: randomQuestion.explanation,
-       audio: randomQuestion.correctAnswer
+       audio: randomQuestion.correctAnswer,
+       difficulty: 'medium',
+       category: 'grammar',
+       tags: ['particles', 'basic'],
+       hints: ['Think about the function'],
+       points: 15,
+       aiGenerated: false,
+       userRating: 0,
+       usageCount: 0,
+       successRate: 0
      };
   };
 

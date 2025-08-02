@@ -11,6 +11,154 @@ export interface User {
   difficulty: 'beginner' | 'intermediate' | 'advanced';
 }
 
+// AI Learning Engine Types
+export interface AIRecommendation {
+  type: 'review' | 'practice' | 'new' | 'challenge';
+  priority: 'high' | 'medium' | 'low';
+  content: string;
+  reason: string;
+  estimatedTime: number;
+  estimatedImpact: number;
+  confidence: number;
+  timestamp: Date;
+}
+
+export interface LearningPath {
+  currentModule: string;
+  modules: string[];
+  completedModules: string[];
+  nextModule: string;
+}
+
+export interface AIInsights {
+  learningStyle: 'visual' | 'auditory' | 'kinesthetic' | 'mixed';
+  strengths: string[];
+  weaknesses: string[];
+  recommendations: string[];
+  predictedCompletionDate: Date;
+  confidenceLevel: number;
+  studyOptimization: StudyOptimization;
+}
+
+export interface StudyOptimization {
+  bestStudyTime: string;
+  optimalSessionLength: number;
+  recommendedBreaks: number;
+  focusAreas: string[];
+  reviewSchedule: ReviewSchedule;
+}
+
+export interface ReviewSchedule {
+  intervals: number[];
+  characters: string[];
+  nextReview: Date;
+}
+
+export interface EmotionalState {
+  mood: 'happy' | 'sad' | 'neutral' | 'excited' | 'frustrated' | 'focused' | 'tired';
+  energy: 'high' | 'medium' | 'low';
+  focus: 'focused' | 'distracted' | 'overwhelmed';
+  stress: 'low' | 'medium' | 'high';
+  confidence: number;
+  motivation: number;
+  lastUpdated: Date;
+}
+
+export interface PredictiveAnalytics {
+  nextPractice: string;
+  recommendedModules: string[];
+  predictedAccuracy: number;
+  estimatedCompletionTime: number;
+  forgettingCurve: ForgettingCurveData[];
+  optimalStudyTimes: OptimalStudyTime[];
+  burnoutRisk: number;
+  successProbability: number;
+}
+
+export interface ForgettingCurveData {
+  character: string;
+  lastReviewed: Date;
+  nextReview: Date;
+  retentionRate: number;
+  difficulty: number;
+}
+
+export interface OptimalStudyTime {
+  timeOfDay: string;
+  dayOfWeek: number;
+  effectiveness: number;
+  reason: string;
+}
+
+// Gamification Types
+export interface GameState {
+  currentLevel: number;
+  currentXP: number;
+  streak: number;
+  achievementsUnlocked: string[];
+  badgesEarned: string[];
+  challengesCompleted: string[];
+  coins?: number;
+  gems?: number;
+  streakProtectionItems?: number;
+  streakProtected?: boolean;
+  lessonsCompleted?: number;
+}
+
+export interface Challenge {
+  id: string;
+  type: 'daily' | 'weekly' | 'monthly' | 'special';
+  title: string;
+  description: string;
+  requirements: ChallengeRequirement[];
+  rewards: Reward[];
+  participants: string[];
+  leaderboard: LeaderboardEntry[];
+  startDate: Date;
+  endDate: Date;
+  completed: boolean;
+}
+
+export interface ChallengeRequirement {
+  type: 'practice_time' | 'accuracy' | 'characters' | 'streak' | 'lessons';
+  target: number;
+  current: number;
+  completed: boolean;
+}
+
+export interface Reward {
+  type: 'xp' | 'badge' | 'achievement' | 'premium_feature' | 'custom' | 'coins' | 'gems' | 'streak_protection';
+  value: number | string;
+  description: string;
+}
+
+export interface LeaderboardEntry {
+  userId: string;
+  username: string;
+  avatar: string;
+  score: number;
+  rank: number;
+  progress: number;
+}
+
+// Enhanced Exercise Types
+export type ExerciseType = 
+  | 'flashcard'
+  | 'multiple-choice'
+  | 'fill-blank'
+  | 'drag-drop'
+  | 'match-sound'
+  | 'listen-type'
+  | 'speak-repeat'
+  | 'handwriting'
+  | 'sentence-construction'
+  | 'translation'
+  | 'context-cloze'
+  | 'grammar-correction'
+  | 'pronunciation-practice'
+  | 'listening-comprehension'
+  | 'reading-comprehension';
+
 export interface Progress {
   hiragana: CharacterProgress[];
   katakana: CharacterProgress[];
@@ -148,7 +296,6 @@ export interface GrammarExample {
   explanation: string;
 }
 
-// Exercise Types
 export interface Exercise {
   id: string;
   type: ExerciseType;
@@ -157,16 +304,17 @@ export interface Exercise {
   correctAnswer: string | string[];
   explanation: string;
   audio?: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  category: string;
+  tags: string[];
+  hints: string[];
+  timeLimit?: number;
+  points: number;
+  aiGenerated: boolean;
+  userRating: number;
+  usageCount: number;
+  successRate: number;
 }
-
-export type ExerciseType = 
-  | 'flashcard'
-  | 'multiple-choice'
-  | 'fill-blank'
-  | 'drag-drop'
-  | 'match-sound'
-  | 'listen-type'
-  | 'speak-repeat';
 
 export interface Lesson {
   id: string;
@@ -178,7 +326,6 @@ export interface Lesson {
   difficulty: 'beginner' | 'intermediate' | 'advanced';
 }
 
-// Quiz and Assessment Types
 export interface Quiz {
   id: string;
   title: string;
@@ -216,7 +363,6 @@ export interface QuizMistake {
   explanation: string;
 }
 
-// Audio and Speech Types
 export interface AudioSettings {
   enabled: boolean;
   volume: number;
@@ -230,7 +376,6 @@ export interface SpeechRecognitionResult {
   isFinal: boolean;
 }
 
-// UI and Animation Types
 export interface MascotAnimation {
   type: 'idle' | 'happy' | 'sad' | 'thinking' | 'celebration';
   duration: number;
@@ -243,6 +388,18 @@ export interface Badge {
   icon: string;
   unlocked: boolean;
   unlockedAt?: Date;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  category: string;
+  requirements: BadgeRequirement[];
+  xpReward: number;
+  animation: string;
+}
+
+export interface BadgeRequirement {
+  type: 'streak' | 'accuracy' | 'practice_time' | 'characters' | 'lessons' | 'quizzes';
+  target: number;
+  current: number;
+  completed: boolean;
 }
 
 export interface Achievement {
@@ -252,4 +409,18 @@ export interface Achievement {
   xpReward: number;
   unlocked: boolean;
   unlockedAt?: Date;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  category: string;
+  requirements: AchievementRequirement[];
+  icon: string;
+  animation: string;
+  social: boolean;
+}
+
+export interface AchievementRequirement {
+  type: 'streak' | 'accuracy' | 'practice_time' | 'characters' | 'lessons' | 'quizzes' | 'social';
+  target: number;
+  current: number;
+  completed: boolean;
+  description: string;
 } 
