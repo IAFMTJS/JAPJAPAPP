@@ -1,7 +1,7 @@
 {
   "short_name": "JapJap",
   "name": "JapJap - Japanese Learning App",
-  "description": "Learn Japanese with AI-powered exercises, gamification, and personalized learning paths",
+  "description": "Learn Japanese with AI-powered exercises, gamification, and personalized learning paths. Master Hiragana, Katakana, Kanji, and grammar with interactive lessons.",
   "icons": [
     {
       "src": "favicon.ico",
@@ -19,6 +19,18 @@
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "monochrome"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "monochrome"
     }
   ],
   "start_url": "/",
@@ -28,7 +40,7 @@
   "background_color": "#ffffff",
   "scope": "/",
   "lang": "en",
-  "categories": ["education", "productivity"],
+  "categories": ["education", "productivity", "utilities"],
   "screenshots": [
     {
       "src": "logo512.png",
@@ -36,6 +48,13 @@
       "type": "image/png",
       "form_factor": "wide",
       "label": "JapJap Learning Dashboard"
+    },
+    {
+      "src": "logo192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "JapJap Mobile Interface"
     }
   ],
   "shortcuts": [
@@ -74,10 +93,63 @@
           "sizes": "192x192"
         }
       ]
+    },
+    {
+      "name": "Hiragana",
+      "short_name": "Hiragana",
+      "description": "Practice Hiragana characters",
+      "url": "/#hiragana",
+      "icons": [
+        {
+          "src": "logo192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Kanji",
+      "short_name": "Kanji",
+      "description": "Study Kanji characters",
+      "url": "/#kanji",
+      "icons": [
+        {
+          "src": "logo192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ],
   "prefer_related_applications": false,
   "edge_side_panel": {
     "preferred_width": 400
-  }
+  },
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+japjap",
+      "url": "/?protocol=%s"
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "/",
+      "accept": {
+        "text/csv": [".csv"],
+        "application/json": [".json"]
+      }
+    }
+  ],
+  "share_target": {
+    "action": "/",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "handle_links": "preferred",
+  "capture_links": "existing-client-navigate"
 }

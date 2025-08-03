@@ -89,6 +89,17 @@ export interface LearningAnalytics {
   motivationLevel: number;
   weakAreas: string[];
   strongAreas: string[];
+  mobileUsage: {
+    sessions: number;
+    totalTime: number;
+    offlineUsage: number;
+    lastSync: string | null;
+  };
+  sessionData: {
+    duration: number;
+  };
+  weeklyProgress: Record<string, any>;
+  dailyProgress: Record<string, any>;
 }
 
 export interface GamificationElements {
@@ -324,6 +335,7 @@ export interface DailyStats {
   streak: number;
   xpGained: number;
   sessions: PracticeSession[];
+  focusAreas: string[];
 }
 
 // Learning Content Types

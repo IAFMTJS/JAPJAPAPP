@@ -26,9 +26,12 @@ const AdvancedExerciseSystem: React.FC<AdvancedExerciseSystemProps> = ({
   const [score, setScore] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(30);
   const [isTimerActive, setIsTimerActive] = useState(false);
+  const [currentLevel, setCurrentLevel] = useState(1);
+  const [xpEarned, setXpEarned] = useState(0);
   // Memory game state
   const [memoryCards, setMemoryCards] = useState<any[]>([]);
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
+  const [matchedPairs, setMatchedPairs] = useState<number[]>([]);
   
   // Pattern recognition state
   const [patternSequence, setPatternSequence] = useState<string[]>([]);
@@ -48,7 +51,19 @@ const AdvancedExerciseSystem: React.FC<AdvancedExerciseSystemProps> = ({
     endLearningSession,
     trackExerciseCompletion,
     trackAIInteraction
-  } = useStore();
+  } = useStore() as any;
+
+  // Handle time up for exercises
+  const handleTimeUp = useCallback(() => {
+    setIsTimerActive(false);
+    setShowFeedback(true);
+    setIsCorrect(false);
+    setStreak(0);
+    // Track exercise completion
+    if (currentExercise) {
+      trackExerciseCompletion(currentExercise, { correct: false, timeSpent: 30 - timeRemaining }, 30 - timeRemaining);
+    }
+  }, [currentExercise, timeRemaining, trackExerciseCompletion]);
 
   // Start learning session when component mounts
   useEffect(() => {
@@ -69,7 +84,7 @@ const AdvancedExerciseSystem: React.FC<AdvancedExerciseSystemProps> = ({
       recognition.interimResults = false;
       recognition.lang = 'ja-JP';
       
-      recognition.onresult = (event: SpeechRecognitionEvent) => {
+      recognition.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
         setTranscript(transcript);
         setUserAnswer(transcript);
@@ -227,12 +242,6 @@ const AdvancedExerciseSystem: React.FC<AdvancedExerciseSystemProps> = ({
   const startTimer = useCallback(() => {
     setTimeRemaining(30);
     setIsTimerActive(true);
-  }, []);
-
-  const handleTimeUp = useCallback(() => {
-    setIsTimerActive(false);
-    setStreak(0);
-    // Handle time up logic
   }, []);
 
   // Generate advanced exercises

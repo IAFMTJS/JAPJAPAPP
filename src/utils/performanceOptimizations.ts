@@ -1,4 +1,5 @@
 // Performance optimization utilities for the JAPJAP app
+import React from 'react';
 
 // Debounce function to limit function calls
 export const debounce = <T extends (...args: any[]) => any>(
@@ -50,14 +51,14 @@ export const memoize = <T extends (...args: any[]) => any>(
 // Lazy loading helper for components
 export const lazyLoad = <T extends React.ComponentType<any>>(
   importFunc: () => Promise<{ default: T }>,
-  fallback?: React.ComponentType
+  fallback?: React.ComponentType<any>
 ): React.LazyExoticComponent<T> => {
   return React.lazy(() => 
     importFunc().catch(() => {
       console.warn('Failed to load component, using fallback');
-      return fallback ? { default: fallback } : { default: () => <div>Loading...</div> };
+      return fallback ? { default: fallback } : { default: () => React.createElement('div', null, 'Loading...') };
     })
-  );
+  ) as React.LazyExoticComponent<T>;
 };
 
 // Memory management utilities
@@ -95,21 +96,19 @@ export class ErrorBoundary extends React.Component<
     console.error('Error caught by boundary:', error, errorInfo);
   }
 
-  render() {
+    render() {
     if (this.state.hasError) {
-      const FallbackComponent = this.props.fallback || (() => (
-        <div className="p-4 text-center">
-          <h2 className="text-lg font-semibold text-red-600">Something went wrong</h2>
-          <p className="text-gray-600">Please refresh the page to try again.</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            Refresh Page
-          </button>
-        </div>
-      ));
-      return <FallbackComponent />;
+      const FallbackComponent = this.props.fallback || (() => 
+        React.createElement('div', { className: 'p-4 text-center' },
+          React.createElement('h2', { className: 'text-lg font-semibold text-red-600' }, 'Something went wrong'),
+          React.createElement('p', { className: 'text-gray-600' }, 'Please refresh the page to try again.'),
+          React.createElement('button', {
+            onClick: () => window.location.reload(),
+            className: 'mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600'
+          }, 'Refresh Page')
+        )
+      );
+      return React.createElement(FallbackComponent);
     }
 
     return this.props.children;
@@ -222,7 +221,4 @@ export const retry = async <T>(
   }
   
   throw lastError!;
-};
-
-// Import React for the ErrorBoundary component
-import React from 'react'; 
+}; 

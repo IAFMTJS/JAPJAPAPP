@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JapJap - Offline</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .offline-container {
+            text-align: center;
+            max-width: 500px;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .offline-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .feature {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+        }
+
+        .feature h3 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature p {
+            font-size: 0.9rem;
+            margin: 0;
+            opacity: 0.8;
+        }
+
+        .retry-button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .retry-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .retry-button:active {
+            transform: translateY(0);
+        }
+
+        .status {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+            width: 0%;
+            transition: width 0.3s ease;
+            animation: loading 2s infinite;
+        }
+
+        @keyframes loading {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">📱</div>
+        <h1>You're Offline</h1>
+        <p>Don't worry! JapJap works offline too. You can still practice with cached content and review your progress.</p>
+        
+        <div class="features">
+            <div class="feature">
+                <h3>📚 Practice Mode</h3>
+                <p>Continue learning with cached exercises and lessons</p>
+            </div>
+            <div class="feature">
+                <h3>📊 Progress Review</h3>
+                <p>View your learning progress and achievements</p>
+            </div>
+            <div class="feature">
+                <h3>🎯 Offline Exercises</h3>
+                <p>Complete exercises and track your performance</p>
+            </div>
+        </div>
+
+        <button class="retry-button" onclick="retryConnection()">
+            🔄 Try Again
+        </button>
+        
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+        
+        <div class="status" id="status">
+            Checking connection...
+        </div>
+    </div>
+
+    <script>
+        let retryCount = 0;
+        const maxRetries = 5;
+
+        function retryConnection() {
+            retryCount++;
+            const status = document.getElementById('status');
+            const button = document.querySelector('.retry-button');
+            
+            if (retryCount > maxRetries) {
+                status.textContent = 'Unable to connect. Please check your internet connection.';
+                button.disabled = true;
+                button.textContent = 'Max Retries Reached';
+                return;
+            }
+
+            status.textContent = `Attempting to reconnect... (${retryCount}/${maxRetries})`;
+            button.textContent = '🔄 Connecting...';
+            button.disabled = true;
+
+            // Simulate connection check
+            setTimeout(() => {
+                if (navigator.onLine) {
+                    status.textContent = 'Connection restored! Redirecting...';
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    status.textContent = 'Still offline. You can continue using cached content.';
+                    button.textContent = '🔄 Try Again';
+                    button.disabled = false;
+                }
+            }, 2000);
+        }
+
+        // Listen for online/offline events
+        window.addEventListener('online', () => {
+            const status = document.getElementById('status');
+            status.textContent = 'Connection restored! Redirecting...';
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        });
+
+        window.addEventListener('offline', () => {
+            const status = document.getElementById('status');
+            status.textContent = 'Connection lost. You can continue using cached content.';
+        });
+
+        // Check if we can access cached content
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.ready.then(registration => {
+                // Check if we have cached content
+                caches.keys().then(cacheNames => {
+                    if (cacheNames.length > 0) {
+                        const status = document.getElementById('status');
+                        status.textContent = 'Offline mode active. Cached content available.';
+                    }
+                });
+            });
+        }
+
+        // Auto-retry every 30 seconds
+        setInterval(() => {
+            if (!navigator.onLine && retryCount < maxRetries) {
+                retryConnection();
+            }
+        }, 30000);
+    </script>
+</body>
+</html> 

@@ -1,6 +1,13 @@
-const CACHE_NAME = 'japjap-v1.0.0';
-const urlsToCache = [
+// Enhanced Service Worker for JapJap PWA
+const CACHE_NAME = 'japjap-v2.0.0';
+const STATIC_CACHE = 'japjap-static-v2.0.0';
+const DYNAMIC_CACHE = 'japjap-dynamic-v2.0.0';
+const API_CACHE = 'japjap-api-v2.0.0';
+
+// Files to cache immediately
+const STATIC_FILES = [
   '/',
+  '/index.html',
   '/static/js/bundle.js',
   '/static/css/main.css',
   '/manifest.json',
@@ -9,57 +16,169 @@ const urlsToCache = [
   '/logo512.png'
 ];
 
-// Install event - cache resources
-self.addEventListener('install', event => {
+// API endpoints to cache
+const API_ENDPOINTS = [
+  '/api/progress',
+  '/api/user',
+  '/api/exercises'
+];
+
+// Install event - cache static files
+self.addEventListener('install', (event) => {
+  console.log('Service Worker: Installing...');
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
+    caches.open(STATIC_CACHE)
+      .then((cache) => {
+        console.log('Service Worker: Caching static files');
+        return cache.addAll(STATIC_FILES);
+      })
+      .then(() => {
+        console.log('Service Worker: Static files cached');
+        return self.skipWaiting();
+      })
+      .catch((error) => {
+        console.error('Service Worker: Error caching static files:', error);
       })
   );
 });
 
-// Fetch event - serve from cache when offline
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Return cached version or fetch from network
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
-      }
-    )
-  );
-});
-
 // Activate event - clean up old caches
-self.addEventListener('activate', event => {
+self.addEventListener('activate', (event) => {
+  console.log('Service Worker: Activating...');
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    caches.keys()
+      .then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => {
+            if (cacheName !== STATIC_CACHE && 
+                cacheName !== DYNAMIC_CACHE && 
+                cacheName !== API_CACHE) {
+              console.log('Service Worker: Deleting old cache:', cacheName);
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      })
+      .then(() => {
+        console.log('Service Worker: Activated');
+        return self.clients.claim();
+      })
   );
 });
 
-// Background sync for offline data
-self.addEventListener('sync', event => {
+// Fetch event - handle different caching strategies
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  // Skip non-GET requests
+  if (request.method !== 'GET') {
+    return;
+  }
+
+  // Handle different types of requests
+  if (url.origin === self.location.origin) {
+    // Same-origin requests
+    if (url.pathname === '/') {
+      // Home page - cache first, then network
+      event.respondWith(cacheFirst(request, STATIC_CACHE));
+    } else if (url.pathname.startsWith('/static/')) {
+      // Static assets - cache first
+      event.respondWith(cacheFirst(request, STATIC_CACHE));
+    } else if (url.pathname.startsWith('/api/')) {
+      // API requests - network first, then cache
+      event.respondWith(networkFirst(request, API_CACHE));
+    } else {
+      // Other pages - network first, then cache
+      event.respondWith(networkFirst(request, DYNAMIC_CACHE));
+    }
+  } else {
+    // Cross-origin requests - network first
+    event.respondWith(networkFirst(request, DYNAMIC_CACHE));
+  }
+});
+
+// Cache First Strategy
+async function cacheFirst(request, cacheName) {
+  try {
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    
+    const networkResponse = await fetch(request);
+    if (networkResponse.ok) {
+      const cache = await caches.open(cacheName);
+      cache.put(request, networkResponse.clone());
+    }
+    return networkResponse;
+  } catch (error) {
+    console.error('Cache First Strategy Error:', error);
+    return new Response('Offline content not available', {
+      status: 503,
+      statusText: 'Service Unavailable',
+      headers: { 'Content-Type': 'text/plain' }
+    });
+  }
+}
+
+// Network First Strategy
+async function networkFirst(request, cacheName) {
+  try {
+    const networkResponse = await fetch(request);
+    if (networkResponse.ok) {
+      const cache = await caches.open(cacheName);
+      cache.put(request, networkResponse.clone());
+    }
+    return networkResponse;
+  } catch (error) {
+    console.log('Network failed, trying cache:', error);
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    
+    // Return offline page for navigation requests
+    if (request.destination === 'document') {
+      return caches.match('/offline.html');
+    }
+    
+    return new Response('Offline content not available', {
+      status: 503,
+      statusText: 'Service Unavailable',
+      headers: { 'Content-Type': 'text/plain' }
+    });
+  }
+}
+
+// Background Sync for offline actions
+self.addEventListener('sync', (event) => {
+  console.log('Service Worker: Background sync triggered:', event.tag);
+  
   if (event.tag === 'background-sync') {
     event.waitUntil(doBackgroundSync());
   }
 });
 
-// Push notification handling
-self.addEventListener('push', event => {
+async function doBackgroundSync() {
+  try {
+    // Sync any pending data when connection is restored
+    const clients = await self.clients.matchAll();
+    clients.forEach((client) => {
+      client.postMessage({
+        type: 'SYNC_DATA',
+        timestamp: Date.now()
+      });
+    });
+  } catch (error) {
+    console.error('Background sync error:', error);
+  }
+}
+
+// Push notifications
+self.addEventListener('push', (event) => {
+  console.log('Service Worker: Push notification received');
+  
   const options = {
     body: event.data ? event.data.text() : 'New learning content available!',
     icon: '/logo192.png',
@@ -84,12 +203,14 @@ self.addEventListener('push', event => {
   };
 
   event.waitUntil(
-    self.registration.showNotification('JapJap', options)
+    self.registration.showNotification('JapJap Learning', options)
   );
 });
 
-// Notification click handling
-self.addEventListener('notificationclick', event => {
+// Notification click
+self.addEventListener('notificationclick', (event) => {
+  console.log('Service Worker: Notification clicked');
+  
   event.notification.close();
 
   if (event.action === 'explore') {
@@ -99,52 +220,65 @@ self.addEventListener('notificationclick', event => {
   }
 });
 
-async function doBackgroundSync() {
-  // Sync offline progress when connection is restored
+// Message handling
+self.addEventListener('message', (event) => {
+  console.log('Service Worker: Message received:', event.data);
+  
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+  
+  if (event.data && event.data.type === 'CACHE_DATA') {
+    event.waitUntil(cacheData(event.data));
+  }
+});
+
+async function cacheData(data) {
   try {
-    const offlineData = await getOfflineData();
-    if (offlineData && offlineData.length > 0) {
-      // In a real app, this would sync with your backend
-      console.log('Syncing offline data:', offlineData);
-      await clearOfflineData();
-    }
+    const cache = await caches.open(DYNAMIC_CACHE);
+    const response = new Response(JSON.stringify(data.content), {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    await cache.put(data.url, response);
+    console.log('Data cached successfully:', data.url);
   } catch (error) {
-    console.error('Background sync failed:', error);
+    console.error('Error caching data:', error);
   }
 }
 
-async function getOfflineData() {
-  // Get offline data from IndexedDB or localStorage
-  return new Promise((resolve) => {
-    if ('indexedDB' in window) {
-      const request = indexedDB.open('japjap-offline', 1);
-      request.onsuccess = () => {
-        const db = request.result;
-        const transaction = db.transaction(['offline-data'], 'readonly');
-        const store = transaction.objectStore('offline-data');
-        const getRequest = store.getAll();
-        getRequest.onsuccess = () => resolve(getRequest.result);
-      };
-    } else {
-      resolve([]);
+// Periodic background sync (if supported)
+self.addEventListener('periodicsync', (event) => {
+  console.log('Service Worker: Periodic sync triggered:', event.tag);
+  
+  if (event.tag === 'content-sync') {
+    event.waitUntil(syncContent());
+  }
+});
+
+async function syncContent() {
+  try {
+    // Sync learning content in the background
+    const response = await fetch('/api/content/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    
+    if (response.ok) {
+      const content = await response.json();
+      // Cache new content
+      const cache = await caches.open(DYNAMIC_CACHE);
+      await cache.put('/api/content', new Response(JSON.stringify(content)));
     }
-  });
+  } catch (error) {
+    console.error('Periodic sync error:', error);
+  }
 }
 
-async function clearOfflineData() {
-  // Clear offline data after successful sync
-  return new Promise((resolve) => {
-    if ('indexedDB' in window) {
-      const request = indexedDB.open('japjap-offline', 1);
-      request.onsuccess = () => {
-        const db = request.result;
-        const transaction = db.transaction(['offline-data'], 'readwrite');
-        const store = transaction.objectStore('offline-data');
-        const clearRequest = store.clear();
-        clearRequest.onsuccess = () => resolve();
-      };
-    } else {
-      resolve();
-    }
-  });
-} 
+// Error handling
+self.addEventListener('error', (event) => {
+  console.error('Service Worker Error:', event.error);
+});
+
+self.addEventListener('unhandledrejection', (event) => {
+  console.error('Service Worker Unhandled Rejection:', event.reason);
+}); 

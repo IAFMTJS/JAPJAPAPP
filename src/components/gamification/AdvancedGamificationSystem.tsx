@@ -241,7 +241,7 @@ const AdvancedGamificationSystem: React.FC<AdvancedGamificationSystemProps> = ({
     ];
 
     dailyChallenges.forEach(challenge => {
-      if (!challenges.find(c => c.id === challenge.id)) {
+      if (!challenges.find((c: any) => c.id === challenge.id)) {
         addChallenge(challenge);
       }
     });
@@ -379,7 +379,7 @@ const AdvancedGamificationSystem: React.FC<AdvancedGamificationSystemProps> = ({
       >
         <h3 className="text-xl font-bold text-gray-800 mb-4">Daily Challenges</h3>
         <div className="space-y-4">
-                     {challenges.filter(c => c.type === 'daily').map((challenge) => (
+                     {challenges.filter((c: any) => c.type === 'daily').map((challenge: any) => (
              <div
                key={challenge.id}
                className={`p-4 rounded-lg border-2 transition-transform hover:scale-102 ${

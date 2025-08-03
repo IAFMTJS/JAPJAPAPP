@@ -2,6 +2,9 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { useStore, useCurrentSection } from './store/useStore';
 import { NavigationSection } from './types';
 import { ErrorBoundary, performanceMonitor, debounce } from './utils/performanceOptimizations';
+import PWAInstallBanner from './components/ui/PWAInstallBanner';
+import OfflineIndicator from './components/ui/OfflineIndicator';
+import PWAUpdateNotification from './components/ui/PWAUpdateNotification';
 import HomeScreen from './components/screens/HomeScreen';
 import HiraganaScreen from './components/screens/HiraganaScreen';
 import KatakanaScreen from './components/screens/KatakanaScreen';
@@ -48,14 +51,14 @@ function App() {
 
     if (isLeftSwipe) {
       // Swipe left - go to next section
-      const sections = ['home', 'hiragana', 'katakana', 'kanji', 'grammar', 'quiz', 'tracker', 'ai-tutor', 'advanced-learning'];
-      const currentIndex = sections.indexOf(currentSection);
+      const sections: NavigationSection[] = ['home', 'hiragana', 'katakana', 'kanji', 'grammar', 'quiz', 'tracker', 'ai-tutor', 'advanced-learning'];
+      const currentIndex = sections.indexOf(currentSection as NavigationSection);
       const nextIndex = (currentIndex + 1) % sections.length;
       handleNavigation(sections[nextIndex]);
     } else if (isRightSwipe) {
       // Swipe right - go to previous section
-      const sections = ['home', 'hiragana', 'katakana', 'kanji', 'grammar', 'quiz', 'tracker', 'ai-tutor', 'advanced-learning'];
-      const currentIndex = sections.indexOf(currentSection);
+      const sections: NavigationSection[] = ['home', 'hiragana', 'katakana', 'kanji', 'grammar', 'quiz', 'tracker', 'ai-tutor', 'advanced-learning'];
+      const currentIndex = sections.indexOf(currentSection as NavigationSection);
       const prevIndex = currentIndex === 0 ? sections.length - 1 : currentIndex - 1;
       handleNavigation(sections[prevIndex]);
     }
@@ -179,17 +182,8 @@ function App() {
     };
   }, []);
 
-  // Handle navigation history updates
+  // Update URL hash for bookmarking/sharing
   useEffect(() => {
-    setNavigationHistory(prev => {
-      // Don't add duplicate consecutive entries
-      if (prev[prev.length - 1] !== currentSection) {
-        return [...prev, currentSection];
-      }
-      return prev;
-    });
-    
-    // Update URL hash for bookmarking/sharing
     if (currentSection !== 'home') {
       window.location.hash = currentSection;
     } else {
@@ -482,18 +476,18 @@ function App() {
               </div>
               
               <div className="space-y-2">
-                {[
-                  { id: 'home', label: 'Home', icon: 'home' },
-                  { id: 'hiragana', label: 'Hiragana', icon: 'hiragana' },
-                  { id: 'katakana', label: 'Katakana', icon: 'katakana' },
-                  { id: 'kanji', label: 'Kanji', icon: 'kanji' },
-                  { id: 'grammar', label: 'Grammar', icon: 'grammar' },
-                  { id: 'quiz', label: 'Quiz', icon: 'quiz' },
-                  { id: 'tracker', label: 'Progress', icon: 'progress' },
-                  { id: 'ai-tutor', label: 'AI Tutor', icon: 'ai' },
-                  { id: 'advanced-learning', label: 'Advanced Learning', icon: 'dashboard' },
-                  { id: 'profile', label: 'Profile', icon: 'user' },
-                ].map((item) => (
+                {([
+                  { id: 'home' as NavigationSection, label: 'Home', icon: 'home' },
+                  { id: 'hiragana' as NavigationSection, label: 'Hiragana', icon: 'hiragana' },
+                  { id: 'katakana' as NavigationSection, label: 'Katakana', icon: 'katakana' },
+                  { id: 'kanji' as NavigationSection, label: 'Kanji', icon: 'kanji' },
+                  { id: 'grammar' as NavigationSection, label: 'Grammar', icon: 'grammar' },
+                  { id: 'quiz' as NavigationSection, label: 'Quiz', icon: 'quiz' },
+                  { id: 'tracker' as NavigationSection, label: 'Progress', icon: 'progress' },
+                  { id: 'ai-tutor' as NavigationSection, label: 'AI Tutor', icon: 'ai' },
+                  { id: 'advanced-learning' as NavigationSection, label: 'Advanced Learning', icon: 'dashboard' },
+                  { id: 'profile' as NavigationSection, label: 'Profile', icon: 'user' },
+                ] as const).map((item) => (
                   <button
                     key={item.id}
                     onClick={() => {
@@ -586,6 +580,11 @@ function App() {
       {/* Mascot */}
       {/* Assuming Mascot component is defined elsewhere or will be added */}
       {/* <Mascot /> */}
+      
+      {/* PWA Components */}
+      <PWAInstallBanner />
+      <OfflineIndicator />
+      <PWAUpdateNotification />
       </div>
     </ErrorBoundary>
   );

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useStore } from '../../store/useStore';
 import Icons from '../ui/Icons';
+import { NavigationSection } from '../../types';
 
 interface ProgressTrackingScreenProps {
-  onNavigate: (section: string) => void;
+  onNavigate: (section: NavigationSection) => void;
 }
 
 const ProgressTrackingScreen: React.FC<ProgressTrackingScreenProps> = ({
@@ -221,7 +222,7 @@ const ProgressTrackingScreen: React.FC<ProgressTrackingScreenProps> = ({
         <div className="bg-white rounded-xl p-6 shadow-lg">
           <h3 className="text-xl font-bold text-gray-800 mb-4">Focus Areas</h3>
           <div className="flex flex-wrap gap-2">
-            {dailyStats.focusAreas.map((area, index) => (
+            {dailyStats.focusAreas.map((area: any, index: number) => (
               <span key={index} className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">
                 {area}
               </span>

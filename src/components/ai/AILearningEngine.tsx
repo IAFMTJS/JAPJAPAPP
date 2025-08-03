@@ -173,7 +173,18 @@ const AILearningEngine: React.FC<AILearningEngineProps> = ({
       averageSessionLength: 0,
       motivationLevel: 0,
       weakAreas: [],
-      strongAreas: []
+      strongAreas: [],
+      mobileUsage: {
+        sessions: 0,
+        totalTime: 0,
+        offlineUsage: 0,
+        lastSync: null,
+      },
+      sessionData: {
+        duration: 0,
+      },
+      weeklyProgress: {},
+      dailyProgress: {},
     };
 
     // Calculate performance metrics
@@ -639,7 +650,7 @@ const AILearningEngine: React.FC<AILearningEngineProps> = ({
       clearTimeout(timeoutId);
       console.log('AI analysis finished');
     }
-  }, [currentProgress, addAIRecommendation, onRecommendationUpdate, updateAIInsights, updatePredictiveAnalytics, onDifficultyAdjustment, calculateSpacedRepetition, detectLearningStyle, calculateAdaptiveDifficulty, generateStudySchedule, generateLearningPath, predictProgress, generateLearningAnalytics, generateGamificationElements, generatePersonalizedContent, isProcessing]);
+  }, [currentProgress, addAIRecommendation, onRecommendationUpdate, updateAIInsights, updatePredictiveAnalytics, onDifficultyAdjustment, calculateSpacedRepetition, detectLearningStyle, calculateAdaptiveDifficulty, generateStudySchedule, generateLearningPath, predictProgress, generateLearningAnalytics, generateGamificationElements, generatePersonalizedContent]);
 
   // Emotional state analysis with enhanced metrics
   const analyzeEmotionalState = useCallback((userBehavior: any) => {
@@ -689,6 +700,14 @@ const AILearningEngine: React.FC<AILearningEngineProps> = ({
       analyzeEmotionalState(currentProgress.userBehavior || {});
     }
   }, [currentProgress?.characters, currentProgress?.userBehavior, analyzeEmotionalState]); // Include dependencies
+
+  // Auto-run AI analysis when component mounts with valid data
+  useEffect(() => {
+    if (currentProgress?.characters && currentProgress.characters.length > 0 && !isProcessing) {
+      console.log('Auto-running AI analysis on mount...');
+      generateRecommendations();
+    }
+  }, [currentProgress?.characters, generateRecommendations]);
 
   return (
     <div

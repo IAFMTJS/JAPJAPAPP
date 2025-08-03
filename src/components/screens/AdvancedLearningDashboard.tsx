@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useStore } from '../../store/useStore';
 import AdvancedExerciseSystem from '../exercises/AdvancedExerciseSystem';
-import { Exercise } from '../../types';
+import { Exercise, NavigationSection } from '../../types';
 
 interface AdvancedLearningDashboardProps {
-  onNavigate: (section: string) => void;
+  onNavigate: (section: NavigationSection) => void;
 }
 
 const AdvancedLearningDashboard: React.FC<AdvancedLearningDashboardProps> = ({
