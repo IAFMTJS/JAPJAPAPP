@@ -21,13 +21,13 @@ const KanjiFlashcardScreen: React.FC = () => {
   });
 
   // Helper functions for filtering kanji
-  const getKanjiByCategory = (category: string): KanjiCharacter[] => {
+  const getKanjiByCategory = useCallback((category: string): KanjiCharacter[] => {
     return allKanjiData.filter(kanji => kanji.category === category);
-  };
+  }, [allKanjiData]);
 
-  const getKanjiByGrade = (grade: number): KanjiCharacter[] => {
+  const getKanjiByGrade = useCallback((grade: number): KanjiCharacter[] => {
     return allKanjiData.filter(kanji => kanji.grade === grade);
-  };
+  }, [allKanjiData]);
 
   const updateFilteredKanji = useCallback(() => {
     let filtered: KanjiCharacter[];

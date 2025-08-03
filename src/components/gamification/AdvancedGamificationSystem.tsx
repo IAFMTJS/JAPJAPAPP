@@ -31,8 +31,7 @@ const AdvancedGamificationSystem: React.FC<AdvancedGamificationSystemProps> = ({
     updateGameState, 
     addAchievement, 
     addBadge, 
-    addChallenge,
-    completeChallenge 
+    addChallenge
   } = useStore();
 
   // XP and Leveling System
@@ -44,7 +43,7 @@ const AdvancedGamificationSystem: React.FC<AdvancedGamificationSystemProps> = ({
   //   return currentLevel * 100;
   // };
 
-  const addXP = (amount: number) => {
+  const addXP = useCallback((amount: number) => {
     const currentXP = gameState.currentXP;
     const newXP = currentXP + amount;
     const currentLevel = calculateLevel(currentXP);
@@ -72,7 +71,7 @@ const AdvancedGamificationSystem: React.FC<AdvancedGamificationSystemProps> = ({
       
       setTimeout(() => setShowLevelUp(false), 3000);
     }
-  };
+  }, [gameState.currentXP, gameState.coins, gameState.gems, gameState.streakProtectionItems, updateGameState, onLevelUp, setShowLevelUp]);
 
   // Achievement System
   const checkAchievements = useCallback((action: string, value: number) => {

@@ -195,7 +195,7 @@ const AILearningEngine: React.FC<AILearningEngineProps> = ({
   }, [currentProgress, addAIRecommendation, onRecommendationUpdate, updateAIInsights, updatePredictiveAnalytics, onDifficultyAdjustment]);
 
   // Emotional state analysis
-  const analyzeEmotionalState = (userBehavior: any) => {
+  const analyzeEmotionalState = useCallback((userBehavior: any) => {
     const stressIndicators = userBehavior.rapidErrors || 0;
     const motivationIndicators = userBehavior.consistentPractice || 0;
     const focusIndicators = userBehavior.sessionLength || 0;
@@ -228,7 +228,7 @@ const AILearningEngine: React.FC<AILearningEngineProps> = ({
       motivation: Math.min(100, motivationIndicators * 10),
       lastUpdated: new Date()
     });
-  };
+  }, [updateEmotionalState]);
 
   useEffect(() => {
     // Run AI analysis every 5 minutes or when progress changes significantly
