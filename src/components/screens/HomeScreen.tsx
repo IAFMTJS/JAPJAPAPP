@@ -1,12 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useStore, useUser } from '../../store/useStore';
 import VoiceDebugger from '../ui/VoiceDebugger';
+import Icons from '../ui/Icons';
+import LoadingSpinner from '../ui/LoadingSpinner';
+import Notification from '../ui/Notification';
 
 const HomeScreen: React.FC = () => {
   const user = useUser();
   const { setCurrentSection, setMascotAnimation, addXP, incrementStreak } = useStore();
   const [showIntro, setShowIntro] = useState(true);
   const [showVoiceDebugger, setShowVoiceDebugger] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [notification, setNotification] = useState<{
+    show: boolean;
+    type: 'success' | 'error' | 'warning' | 'info';
+    title: string;
+    message?: string;
+  }>({ show: false, type: 'info', title: '' });
 
   useEffect(() => {
     // Auto-switch mascots every 3 seconds
@@ -17,10 +27,24 @@ const HomeScreen: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleStartLearning = () => {
+  const handleStartLearning = async () => {
+    setIsLoading(true);
     setMascotAnimation('celebration');
+    
+    // Simulate loading
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
     addXP(10);
     incrementStreak();
+    setIsLoading(false);
+    
+    setNotification({
+      show: true,
+      type: 'success',
+      title: '学習を開始しました！',
+      message: 'ひらがなの学習を始めましょう！'
+    });
+    
     setCurrentSection('hiragana');
   };
 
@@ -101,9 +125,20 @@ const HomeScreen: React.FC = () => {
             {/* Start Learning Button */}
             <button
               onClick={handleStartLearning}
-              className="btn-modern text-lg sm:text-xl lg:text-2xl px-8 sm:px-10 lg:px-12 py-4 sm:py-5 lg:py-6 pulse-glow"
+              disabled={isLoading}
+              className="btn-modern text-lg sm:text-xl lg:text-2xl px-8 sm:px-10 lg:px-12 py-4 sm:py-5 lg:py-6 pulse-glow disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-3"
             >
-              🎌 Start Learning Journey
+              {isLoading ? (
+                <>
+                  <LoadingSpinner size="sm" color="white" showText={false} />
+                  <span>読み込み中...</span>
+                </>
+              ) : (
+                <>
+                  <Icons name="japan" size={24} color="white" />
+                  <span>🎌 Start Learning Journey</span>
+                </>
+              )}
             </button>
 
             {/* Skip Intro Button */}
@@ -157,19 +192,19 @@ const HomeScreen: React.FC = () => {
             <div className="flex space-x-2">
               <button
                 onClick={() => setShowVoiceDebugger(true)}
-                className="glass-card p-3 sm:p-4 rounded-full hover:scale-110 transition-transform duration-200 focus:outline-none focus:ring-2 focus:ring-japanese-red focus:ring-opacity-50"
+                className="glass-card p-3 sm:p-4 rounded-full hover:scale-110 transition-transform duration-200 focus:outline-none focus:ring-2 focus:ring-japanese-red focus:ring-opacity-50 group"
                 title="Voice Debugger"
                 aria-label="Voice Debugger"
               >
-                🔊
+                <Icons name="volume" size={20} color="#DC2626" className="group-hover:scale-110 transition-transform duration-200" />
               </button>
               <button
                 onClick={() => setCurrentSection('profile')}
-                className="glass-card p-3 sm:p-4 rounded-full hover:scale-110 transition-transform duration-200 focus:outline-none focus:ring-2 focus:ring-japanese-blue focus:ring-opacity-50"
+                className="glass-card p-3 sm:p-4 rounded-full hover:scale-110 transition-transform duration-200 focus:outline-none focus:ring-2 focus:ring-japanese-blue focus:ring-opacity-50 group"
                 title="Settings"
                 aria-label="Settings"
               >
-                ⚙️
+                <Icons name="settings" size={20} color="#1E40AF" className="group-hover:scale-110 transition-transform duration-200" />
               </button>
             </div>
           </div>
@@ -294,14 +329,19 @@ const HomeScreen: React.FC = () => {
             onKeyDown={(e) => e.key === 'Enter' && handleSectionClick('quiz')}
           >
             <div className="text-center">
-              <div className="text-4xl sm:text-6xl lg:text-8xl mb-4 sm:mb-6 text-japanese-gold group-hover:scale-110 transition-transform duration-300">🧠</div>
+              <div className="mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300">
+                <Icons name="quiz" size={64} color="#F59E0B" className="sm:w-16 sm:h-16 lg:w-20 lg:h-20" />
+              </div>
               <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-japanese-gold mb-2 sm:mb-4">Quiz</h2>
               <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base lg:text-lg">Test your knowledge</p>
               <div className="gradient-gold text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full text-sm sm:text-base lg:text-lg font-medium">
                 Mixed exercises
               </div>
               <div className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <span className="text-japanese-gold text-sm font-medium">Click to start →</span>
+                <span className="text-japanese-gold text-sm font-medium flex items-center justify-center space-x-1">
+                  <span>Click to start</span>
+                  <Icons name="arrow" size={12} color="#F59E0B" />
+                </span>
               </div>
             </div>
           </div>
@@ -315,14 +355,19 @@ const HomeScreen: React.FC = () => {
             onKeyDown={(e) => e.key === 'Enter' && handleSectionClick('tracker')}
           >
             <div className="text-center">
-              <div className="text-4xl sm:text-6xl lg:text-8xl mb-4 sm:mb-6 text-japanese-gold group-hover:scale-110 transition-transform duration-300">📊</div>
+              <div className="mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300">
+                <Icons name="tracker" size={64} color="#F59E0B" className="sm:w-16 sm:h-16 lg:w-20 lg:h-20" />
+              </div>
               <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-japanese-gold mb-2 sm:mb-4">Progress Tracker</h2>
               <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base lg:text-lg">View detailed statistics</p>
               <div className="gradient-gold text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full text-sm sm:text-base lg:text-lg font-medium">
                 Track progress
               </div>
               <div className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <span className="text-japanese-gold text-sm font-medium">Click to view →</span>
+                <span className="text-japanese-gold text-sm font-medium flex items-center justify-center space-x-1">
+                  <span>Click to view</span>
+                  <Icons name="arrow" size={12} color="#F59E0B" />
+                </span>
               </div>
             </div>
           </div>
@@ -377,6 +422,15 @@ const HomeScreen: React.FC = () => {
       <VoiceDebugger 
         isVisible={showVoiceDebugger} 
         onClose={() => setShowVoiceDebugger(false)} 
+      />
+      
+      {/* Notification */}
+      <Notification
+        show={notification.show}
+        type={notification.type}
+        title={notification.title}
+        message={notification.message}
+        onClose={() => setNotification(prev => ({ ...prev, show: false }))}
       />
     </div>
   );

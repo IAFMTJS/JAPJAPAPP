@@ -1,10 +1,11 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { 
   User, Progress, AudioSettings, QuizResult, PracticeSession, DailyStats,
   AIRecommendation, Achievement, Badge, GameState, LearningPath, AIInsights,
   EmotionalState, PredictiveAnalytics
 } from '../types';
+import { cleanupStorage as cleanupStorageUtil, showStorageWarning } from '../utils/storageUtils';
 
 interface AppState {
   // User and Authentication
@@ -27,7 +28,7 @@ interface AppState {
   quizResults: QuizResult[];
   
   // Mascot State
-  mascotAnimation: 'idle' | 'happy' | 'sad' | 'thinking' | 'celebration';
+  mascotAnimation: 'idle' | 'happy' | 'sad' | 'thinking' | 'celebration' | 'bounce';
   
   // AI Learning Engine
   aiRecommendations: AIRecommendation[];
@@ -73,6 +74,10 @@ interface AppState {
   updateGameState: (gameState: Partial<GameState>) => void;
   addChallenge: (challenge: any) => void;
   completeChallenge: (challengeId: string) => void;
+
+  // Storage optimization
+  cleanupStorage: () => void;
+  resetStorage: () => void;
 }
 
 const defaultUser: User = {
@@ -230,6 +235,44 @@ export const useStore = create<AppState>()(
         }
       },
 
+      // Storage cleanup function
+      cleanupStorage: () => {
+        const state = get();
+        const cleanedState = cleanupStorageUtil(state);
+        set(cleanedState);
+        showStorageWarning('Storage cleaned up successfully!');
+      },
+
+      // Emergency storage reset function
+      resetStorage: () => {
+        try {
+          localStorage.removeItem('japjap-storage');
+          set({
+            user: defaultUser,
+            isAuthenticated: false,
+            progress: defaultProgress,
+            currentSection: 'home',
+            currentLesson: null,
+            currentExercise: 0,
+            audioSettings: defaultAudioSettings,
+            currentQuiz: null,
+            quizResults: [],
+            mascotAnimation: 'idle',
+            aiRecommendations: [],
+            aiInsights: defaultAIInsights,
+            learningPath: defaultLearningPath,
+            emotionalState: defaultEmotionalState,
+            predictiveAnalytics: defaultPredictiveAnalytics,
+            gameState: defaultGameState,
+            achievements: [],
+            badges: [],
+            challenges: [],
+          });
+        } catch (error) {
+          console.error('Failed to reset storage:', error);
+        }
+      },
+
       // Actions
       setUser: (user) => set({ user }),
       
@@ -339,10 +382,15 @@ export const useStore = create<AppState>()(
             ? state.progress.practiceSessions 
             : [];
           
+          // Clean up old sessions if we have too many
+          const cleanedSessions = currentSessions.length > 50 
+            ? currentSessions.slice(-50) 
+            : currentSessions;
+          
           return {
             progress: {
               ...state.progress,
-              practiceSessions: [...currentSessions, session],
+              practiceSessions: [...cleanedSessions, session],
               totalPracticeTime: state.progress.totalPracticeTime + (session.duration / 60),
               totalCharactersPracticed: state.progress.totalCharactersPracticed + session.charactersPracticed.length,
             },
@@ -401,9 +449,16 @@ export const useStore = create<AppState>()(
       setCurrentQuiz: (quizId) => set({ currentQuiz: quizId }),
       
       addQuizResult: (result) => {
-        set((state) => ({
-          quizResults: [...state.quizResults, result],
-        }));
+        set((state) => {
+          // Clean up old quiz results if we have too many
+          const cleanedResults = state.quizResults.length > 100 
+            ? state.quizResults.slice(-100) 
+            : state.quizResults;
+          
+          return {
+            quizResults: [...cleanedResults, result],
+          };
+        });
       },
       
       setMascotAnimation: (animation) => set({ mascotAnimation: animation }),
@@ -453,9 +508,16 @@ export const useStore = create<AppState>()(
 
       // AI Learning Engine Actions
       addAIRecommendation: (recommendation) => {
-        set((state) => ({
-          aiRecommendations: [...state.aiRecommendations, recommendation],
-        }));
+        set((state) => {
+          // Clean up old recommendations if we have too many
+          const cleanedRecommendations = state.aiRecommendations.length > 20 
+            ? state.aiRecommendations.slice(-20) 
+            : state.aiRecommendations;
+          
+          return {
+            aiRecommendations: [...cleanedRecommendations, recommendation],
+          };
+        });
       },
       updateAIInsights: (insights) => {
         set((state) => ({
@@ -467,9 +529,9 @@ export const useStore = create<AppState>()(
           learningPath: { ...state.learningPath, ...path },
         }));
       },
-      updateEmotionalState: (state) => {
+      updateEmotionalState: (emotionalUpdate) => {
         set((state) => ({
-          emotionalState: { ...state.emotionalState, ...state },
+          emotionalState: { ...state.emotionalState, ...emotionalUpdate },
         }));
       },
       updatePredictiveAnalytics: (analytics) => {
@@ -509,29 +571,35 @@ export const useStore = create<AppState>()(
     }),
     {
       name: 'japjap-storage',
-      partialize: (state) => ({
-        user: state.user,
-        progress: state.progress,
-        audioSettings: state.audioSettings,
-        quizResults: state.quizResults,
-        // AI Learning Engine
-        aiRecommendations: state.aiRecommendations,
-        aiInsights: state.aiInsights,
-        learningPath: state.learningPath,
-        emotionalState: state.emotionalState,
-        predictiveAnalytics: state.predictiveAnalytics,
-        // Gamification
-        gameState: state.gameState,
-        achievements: state.achievements,
-        badges: state.badges,
-        challenges: state.challenges,
-      }),
+      partialize: (state) => {
+        const partialized = {
+          user: state.user,
+          progress: state.progress,
+          audioSettings: state.audioSettings,
+          quizResults: state.quizResults,
+          // AI Learning Engine
+          aiRecommendations: state.aiRecommendations,
+          aiInsights: state.aiInsights,
+          learningPath: state.learningPath,
+          emotionalState: state.emotionalState,
+          predictiveAnalytics: state.predictiveAnalytics,
+          // Gamification
+          gameState: state.gameState,
+          achievements: state.achievements,
+          badges: state.badges,
+          challenges: state.challenges,
+        };
+        
+        // Clean up data before storing
+        return cleanupStorageUtil(partialized);
+      },
       onRehydrateStorage: () => (state) => {
         // Run migration when store is rehydrated
         if (state) {
           state.migrateData();
         }
       },
+      storage: createJSONStorage(() => localStorage),
     }
   )
 );
