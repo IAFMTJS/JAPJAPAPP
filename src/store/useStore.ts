@@ -5,7 +5,7 @@ import {
   AIRecommendation, Achievement, Badge, GameState, LearningPath, AIInsights,
   EmotionalState, PredictiveAnalytics
 } from '../types';
-import { cleanupStorage as cleanupStorageUtil, showStorageWarning } from '../utils/storageUtils';
+import { cleanupStorage as cleanupStorageUtil } from '../utils/storageUtils';
 
 interface AppState {
   // User and Authentication

@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useStore, useCurrentSection } from './store/useStore';
+import { NavigationSection } from './types';
+import { ErrorBoundary, performanceMonitor, debounce } from './utils/performanceOptimizations';
 import HomeScreen from './components/screens/HomeScreen';
 import HiraganaScreen from './components/screens/HiraganaScreen';
 import KatakanaScreen from './components/screens/KatakanaScreen';
@@ -19,9 +21,8 @@ import './App.css';
 
 function App() {
   const currentSection = useCurrentSection();
-  const { setCurrentSection, gameState, aiRecommendations } = useStore();
+  const { setCurrentSection } = useStore();
   const [isLoading, setIsLoading] = useState(false);
-  const [navigationHistory, setNavigationHistory] = useState<string[]>(['home']);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -207,13 +208,17 @@ function App() {
     }
   }, [currentSection, setCurrentSection]); // Add missing dependencies
 
-  // Navigation handler with loading state
-  const handleNavigation = (section: string) => {
+  // Navigation handler with loading state and performance monitoring
+  const handleNavigation = debounce((section: NavigationSection) => {
+    performanceMonitor.start('navigation');
     setIsLoading(true);
-    setCurrentSection(section as any);
+    setCurrentSection(section);
     // Short loading delay for smooth transition
-    setTimeout(() => setIsLoading(false), 150);
-  };
+    setTimeout(() => {
+      setIsLoading(false);
+      performanceMonitor.end('navigation');
+    }, 150);
+  }, 100);
 
   // Custom backspace navigation
   useEffect(() => {
@@ -223,16 +228,8 @@ function App() {
           !['INPUT', 'TEXTAREA', 'SELECT'].includes((event.target as HTMLElement).tagName)) {
         event.preventDefault();
         
-        // Navigate to previous section in history
-        setNavigationHistory(prev => {
-          if (prev.length > 1) {
-            const newHistory = prev.slice(0, -1);
-            const previousSection = newHistory[newHistory.length - 1];
-            setCurrentSection(previousSection as any);
-            return newHistory;
-          }
-          return prev;
-        });
+        // Navigate to home section
+        setCurrentSection('home');
       }
     };
 
@@ -365,12 +362,13 @@ function App() {
   };
 
   return (
-    <div 
-      className="App min-h-screen bg-gray-50"
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
-    >
+    <ErrorBoundary>
+      <div 
+        className="App min-h-screen bg-gray-50"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
       {/* Enhanced Navigation Bar */}
       <nav className="bg-white/90 backdrop-blur-md shadow-lg border-b border-gray-200/50 sticky top-0 z-40">
         <div className="container mx-auto px-4">
@@ -519,16 +517,23 @@ function App() {
       )}
 
       <main className="flex-1">
-        {isLoading ? (
+        <Suspense fallback={
           <div className="flex items-center justify-center h-full">
             <div className="loading-spinner rounded-full h-12 w-12 border-b-2 border-red-500"></div>
             <span className="ml-3 text-lg font-semibold text-gray-700">Loading...</span>
           </div>
-        ) : (
-          <div className="page-content">
-            {renderCurrentScreen()}
-          </div>
-        )}
+        }>
+          {isLoading ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="loading-spinner rounded-full h-12 w-12 border-b-2 border-red-500"></div>
+              <span className="ml-3 text-lg font-semibold text-gray-700">Loading...</span>
+            </div>
+          ) : (
+            <div className="page-content">
+              {renderCurrentScreen()}
+            </div>
+          )}
+        </Suspense>
       </main>
 
       {/* Floating Quick Access Menu - Mobile Optimized */}
@@ -581,7 +586,8 @@ function App() {
       {/* Mascot */}
       {/* Assuming Mascot component is defined elsewhere or will be added */}
       {/* <Mascot /> */}
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 }
 

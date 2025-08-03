@@ -1,20 +1,57 @@
 const path = require('path');
 
 module.exports = {
-  // Enable webpack 5 features
-  experiments: {
-    topLevelAwait: true,
+  mode: 'development',
+  entry: './src/index.tsx',
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: 'bundle.js',
+    clean: true,
   },
-  
-  // Optimize module resolution
   resolve: {
     extensions: ['.tsx', '.ts', '.js', '.jsx'],
     alias: {
       '@': path.resolve(__dirname, 'src'),
     },
   },
-  
-  // Optimize for production builds
+  module: {
+    rules: [
+      {
+        test: /\.(ts|tsx)$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'ts-loader',
+          options: {
+            transpileOnly: true, // Faster compilation
+            experimentalWatchApi: true,
+          },
+        },
+      },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader', 'postcss-loader'],
+      },
+      {
+        test: /\.(png|jpg|jpeg|gif|svg)$/,
+        type: 'asset/resource',
+      },
+    ],
+  },
+  devServer: {
+    static: {
+      directory: path.join(__dirname, 'public'),
+    },
+    compress: true,
+    port: 3000,
+    hot: true,
+    historyApiFallback: true,
+    client: {
+      overlay: {
+        errors: true,
+        warnings: false,
+      },
+    },
+  },
   optimization: {
     splitChunks: {
       chunks: 'all',
@@ -24,20 +61,19 @@ module.exports = {
           name: 'vendors',
           chunks: 'all',
         },
-        kanji: {
-          test: /[\\/]src[\\/]data[\\/]kanji.*\.ts$/,
-          name: 'kanji-data',
-          chunks: 'all',
-          priority: 10,
-        },
       },
     },
   },
-  
-  // Performance hints
+  cache: {
+    type: 'filesystem',
+    buildDependencies: {
+      config: [__filename],
+    },
+  },
   performance: {
-    hints: 'warning',
-    maxEntrypointSize: 512000,
-    maxAssetSize: 512000,
+    hints: false, // Disable performance hints for development
+  },
+  stats: {
+    errorDetails: true,
   },
 }; 

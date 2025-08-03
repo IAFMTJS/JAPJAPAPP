@@ -22,7 +22,7 @@ const AdvancedLearningDashboard: React.FC<AdvancedLearningDashboardProps> = ({
   const [challenges, setChallenges] = useState<any[]>([]);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   
-  const { gameState, progress, updateProgress } = useStore();
+  const { gameState, progress } = useStore();
 
   // Initialize dashboard data
   useEffect(() => {

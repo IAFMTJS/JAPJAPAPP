@@ -639,7 +639,7 @@ const AILearningEngine: React.FC<AILearningEngineProps> = ({
       clearTimeout(timeoutId);
       console.log('AI analysis finished');
     }
-  }, [currentProgress, addAIRecommendation, onRecommendationUpdate, updateAIInsights, updatePredictiveAnalytics, onDifficultyAdjustment, calculateSpacedRepetition, detectLearningStyle, calculateAdaptiveDifficulty, generateStudySchedule, generateLearningPath, predictProgress, generateLearningAnalytics, generateGamificationElements, generatePersonalizedContent]);
+  }, [currentProgress, addAIRecommendation, onRecommendationUpdate, updateAIInsights, updatePredictiveAnalytics, onDifficultyAdjustment, calculateSpacedRepetition, detectLearningStyle, calculateAdaptiveDifficulty, generateStudySchedule, generateLearningPath, predictProgress, generateLearningAnalytics, generateGamificationElements, generatePersonalizedContent, isProcessing]);
 
   // Emotional state analysis with enhanced metrics
   const analyzeEmotionalState = useCallback((userBehavior: any) => {
@@ -688,7 +688,7 @@ const AILearningEngine: React.FC<AILearningEngineProps> = ({
     if (currentProgress?.characters && currentProgress.characters.length > 0) {
       analyzeEmotionalState(currentProgress.userBehavior || {});
     }
-  }, []); // Empty dependency array - only run once on mount
+  }, [currentProgress?.characters, currentProgress?.userBehavior, analyzeEmotionalState]); // Include dependencies
 
   return (
     <div

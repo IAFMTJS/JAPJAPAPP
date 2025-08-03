@@ -26,13 +26,9 @@ const AdvancedExerciseSystem: React.FC<AdvancedExerciseSystemProps> = ({
   const [score, setScore] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(30);
   const [isTimerActive, setIsTimerActive] = useState(false);
-  const [currentLevel, setCurrentLevel] = useState(1);
-  const [xpEarned, setXpEarned] = useState(0);
-  
   // Memory game state
   const [memoryCards, setMemoryCards] = useState<any[]>([]);
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
-  const [matchedPairs, setMatchedPairs] = useState<number[]>([]);
   
   // Pattern recognition state
   const [patternSequence, setPatternSequence] = useState<string[]>([]);
@@ -44,10 +40,6 @@ const AdvancedExerciseSystem: React.FC<AdvancedExerciseSystemProps> = ({
   const [transcript, setTranscript] = useState('');
   const [recognition, setRecognition] = useState<any>(null);
   
-  // Gesture recognition state
-  const [currentGesture, setCurrentGesture] = useState<string>('');
-  
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   
@@ -77,7 +69,7 @@ const AdvancedExerciseSystem: React.FC<AdvancedExerciseSystemProps> = ({
       recognition.interimResults = false;
       recognition.lang = 'ja-JP';
       
-      recognition.onresult = (event: any) => {
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
         const transcript = event.results[0][0].transcript;
         setTranscript(transcript);
         setUserAnswer(transcript);
@@ -112,7 +104,7 @@ const AdvancedExerciseSystem: React.FC<AdvancedExerciseSystemProps> = ({
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isTimerActive, timeRemaining]);
+  }, [isTimerActive, timeRemaining, handleTimeUp]);
 
   // Initialize gesture recognition
   const initializeGestureRecognition = useCallback(async () => {

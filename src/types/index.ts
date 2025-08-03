@@ -1,3 +1,22 @@
+// Navigation Types
+export type NavigationSection = 
+  | 'home' 
+  | 'hiragana' 
+  | 'katakana' 
+  | 'kanji' 
+  | 'kanji-flashcards' 
+  | 'grammar' 
+  | 'quiz' 
+  | 'tracker' 
+  | 'profile' 
+  | 'social' 
+  | 'vr' 
+  | 'ar' 
+  | 'ai-tutor' 
+  | 'gamification' 
+  | 'exercises'
+  | 'advanced-learning';
+
 // User and Progress Types
 export interface User {
   id: string;

@@ -20,12 +20,15 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "start:clean": "node scripts/clear-cache.js && react-scripts start",
     "build": "set \"GENERATE_SOURCEMAP=false\" && react-scripts build",
     "build:fast": "set \"GENERATE_SOURCEMAP=false\" && set \"SKIP_PREFLIGHT_CHECK=true\" && react-scripts build",
     "build:optimized": "node scripts/build-optimized.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "analyze": "npm run build && npx webpack-bundle-analyzer build/static/js/*.js"
+    "analyze": "npm run build && npx webpack-bundle-analyzer build/static/js/*.js",
+    "clear-cache": "node scripts/clear-cache.js",
+    "fix-issues": "node scripts/clear-cache.js && npm start"
   },
   "eslintConfig": {
     "extends": [

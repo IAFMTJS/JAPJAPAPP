@@ -20,7 +20,6 @@ const ProgressTrackingScreen: React.FC<ProgressTrackingScreenProps> = ({
     learningAnalytics,
     gameState,
     achievements,
-    badges,
     syncProgress,
     exportProgress,
     importProgress,
@@ -90,7 +89,6 @@ const ProgressTrackingScreen: React.FC<ProgressTrackingScreenProps> = ({
     const hiragana = Array.isArray(progress.hiragana) ? progress.hiragana : [];
     const katakana = Array.isArray(progress.katakana) ? progress.katakana : [];
     const kanji = Array.isArray(progress.kanji) ? progress.kanji : [];
-    const grammar = Array.isArray(progress.grammar) ? progress.grammar : [];
     const totalCharacters = hiragana.length + katakana.length + kanji.length;
     const masteredCharacters = hiragana.filter(p => p.mastered).length +
                               katakana.filter(p => p.mastered).length +
