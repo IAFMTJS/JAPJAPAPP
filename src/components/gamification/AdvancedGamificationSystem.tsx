@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 // Removed framer-motion import due to compatibility issues
 import { useStore } from '../../store/useStore';
-import { GameState, Achievement, Badge, Challenge, Reward } from '../../types';
+import { Achievement, Badge, Challenge, Reward } from '../../types';
 
 interface AdvancedGamificationSystemProps {
   userId: string;
@@ -27,7 +27,6 @@ const AdvancedGamificationSystem: React.FC<AdvancedGamificationSystemProps> = ({
   const { 
     gameState, 
     achievements, 
-    badges, 
     challenges,
     updateGameState, 
     addAchievement, 
@@ -41,9 +40,9 @@ const AdvancedGamificationSystem: React.FC<AdvancedGamificationSystemProps> = ({
     return Math.floor(xp / 100) + 1;
   };
 
-  const calculateXPForNextLevel = (currentLevel: number) => {
-    return currentLevel * 100;
-  };
+  // const calculateXPForNextLevel = (currentLevel: number) => {
+  //   return currentLevel * 100;
+  // };
 
   const addXP = (amount: number) => {
     const currentXP = gameState.currentXP;
@@ -76,7 +75,7 @@ const AdvancedGamificationSystem: React.FC<AdvancedGamificationSystemProps> = ({
   };
 
   // Achievement System
-  const checkAchievements = (action: string, value: number) => {
+  const checkAchievements = useCallback((action: string, value: number) => {
     const achievementDefinitions: Achievement[] = [
       {
         id: 'first-lesson',
@@ -155,10 +154,10 @@ const AdvancedGamificationSystem: React.FC<AdvancedGamificationSystemProps> = ({
         }
       }
     });
-  };
+  }, [addAchievement, addXP, onAchievementUnlocked]);
 
   // Badge System
-  const checkBadges = (action: string, value: number) => {
+  const checkBadges = useCallback((action: string, value: number) => {
     const badgeDefinitions: Badge[] = [
       {
         id: 'speed-demon',
@@ -209,10 +208,10 @@ const AdvancedGamificationSystem: React.FC<AdvancedGamificationSystemProps> = ({
         }
       }
     });
-  };
+  }, [addBadge, addXP, onBadgeEarned]);
 
   // Challenge System
-  const generateDailyChallenges = () => {
+  const generateDailyChallenges = useCallback(() => {
     const dailyChallenges: Challenge[] = [
       {
         id: 'daily-practice-15',
@@ -247,36 +246,36 @@ const AdvancedGamificationSystem: React.FC<AdvancedGamificationSystemProps> = ({
         addChallenge(challenge);
       }
     });
-  };
+  }, [challenges, addChallenge]);
 
   // Streak Protection
-  const useStreakProtection = () => {
-    if (gameState.streakProtectionItems && gameState.streakProtectionItems > 0) {
-      updateGameState({
-        streakProtectionItems: gameState.streakProtectionItems - 1,
-        streakProtected: true
-      });
-      return true;
-    }
-    return false;
-  };
+  // const useStreakProtection = () => {
+  //   if (gameState.streakProtectionItems && gameState.streakProtectionItems > 0) {
+  //     updateGameState({
+  //       streakProtectionItems: gameState.streakProtectionItems - 1,
+  //       streakProtected: true
+  //     });
+  //     return true;
+  //   }
+  //   return false;
+  // };
 
   // Virtual Economy
-  const spendCoins = (amount: number) => {
-    if (gameState.coins && gameState.coins >= amount) {
-      updateGameState({ coins: gameState.coins - amount });
-      return true;
-    }
-    return false;
-  };
+  // const spendCoins = (amount: number) => {
+  //   if (gameState.coins && gameState.coins >= amount) {
+  //     updateGameState({ coins: gameState.coins - amount });
+  //     return true;
+  //   }
+  //   return false;
+  // };
 
-  const spendGems = (amount: number) => {
-    if (gameState.gems && gameState.gems >= amount) {
-      updateGameState({ gems: gameState.gems - amount });
-      return true;
-    }
-    return false;
-  };
+  // const spendGems = (amount: number) => {
+  //   if (gameState.gems && gameState.gems >= amount) {
+  //     updateGameState({ gems: gameState.gems - amount });
+  //     return true;
+  //   }
+  //   return false;
+  // };
 
   useEffect(() => {
     // Generate daily challenges
@@ -286,7 +285,7 @@ const AdvancedGamificationSystem: React.FC<AdvancedGamificationSystemProps> = ({
     checkAchievements('lessons', gameState.lessonsCompleted || 0);
     checkAchievements('streak', gameState.streak || 0);
     checkBadges('consecutive_days', gameState.streak || 0);
-  }, []);
+  }, [generateDailyChallenges, checkAchievements, checkBadges, gameState.lessonsCompleted, gameState.streak]);
 
   return (
     <div className="space-y-6">

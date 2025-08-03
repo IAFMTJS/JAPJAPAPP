@@ -22,7 +22,7 @@ const QuizScreen: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [mistakes, setMistakes] = useState<Array<{questionId: string, question: string, userAnswer: string, correctAnswer: string, explanation: string}>>([]);
   const [allKanjiData, setAllKanjiData] = useState(basicKanjiData);
-  const [isLoadingKanji, setIsLoadingKanji] = useState(false);
+  // const [isLoadingKanji, setIsLoadingKanji] = useState(false);
 
   const exerciseTypes: { type: ExerciseType; name: string; description: string; icon: string }[] = [
     { type: 'flashcard', name: 'Flashcards', description: 'Learn with visual cards', icon: '🃏' },
@@ -320,14 +320,14 @@ const QuizScreen: React.FC = () => {
   useEffect(() => {
     const loadFullKanjiData = async () => {
       if (allKanjiData.length === basicKanjiData.length && (selectedCategory === 'kanji' || selectedCategory === 'mixed')) {
-        setIsLoadingKanji(true);
+        // setIsLoadingKanji(true);
         try {
           const fullData = await getAllKanjiData();
           setAllKanjiData(fullData);
         } catch (error) {
           console.error('Failed to load full kanji data:', error);
         } finally {
-          setIsLoadingKanji(false);
+          // setIsLoadingKanji(false);
         }
       }
     };

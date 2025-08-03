@@ -13,7 +13,7 @@ const KanjiScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentStroke, setCurrentStroke] = useState(0);
   const [allKanjiData, setAllKanjiData] = useState<KanjiCharacter[]>(basicKanjiData);
-  const [isLoading, setIsLoading] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
 
   const categories = [
     { id: 'numbers', name: 'Numbers', color: 'japanese-red', count: 5 },
@@ -99,14 +99,14 @@ const KanjiScreen: React.FC = () => {
   useEffect(() => {
     const loadFullData = async () => {
       if (allKanjiData.length === basicKanjiData.length) {
-        setIsLoading(true);
+        // setIsLoading(true);
         try {
           const fullData = await getAllKanjiData();
           setAllKanjiData(fullData);
         } catch (error) {
           console.error('Failed to load full kanji data:', error);
         } finally {
-          setIsLoading(false);
+          // setIsLoading(false);
         }
       }
     };

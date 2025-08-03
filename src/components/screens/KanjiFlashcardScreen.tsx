@@ -13,7 +13,7 @@ const KanjiFlashcardScreen: React.FC = () => {
   const [selectedGrade, setSelectedGrade] = useState(1);
   const [allKanjiData, setAllKanjiData] = useState<KanjiCharacter[]>(basicKanjiData);
   const [filteredKanji, setFilteredKanji] = useState<KanjiCharacter[]>(basicKanjiData);
-  const [isLoading, setIsLoading] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
   const [studyStats, setStudyStats] = useState({
     correct: 0,
     total: 0,
@@ -44,20 +44,20 @@ const KanjiFlashcardScreen: React.FC = () => {
     setFilteredKanji(filtered);
     setCurrentKanjiIndex(0);
     setShowAnswer(false);
-  }, [studyMode, selectedCategory, selectedGrade, allKanjiData]);
+  }, [studyMode, selectedCategory, selectedGrade, allKanjiData, getKanjiByCategory, getKanjiByGrade]);
 
   // Load full kanji data when component mounts
   useEffect(() => {
     const loadFullData = async () => {
       if (allKanjiData.length === basicKanjiData.length) {
-        setIsLoading(true);
+        // setIsLoading(true);
         try {
           const fullData = await getAllKanjiData();
           setAllKanjiData(fullData);
         } catch (error) {
           console.error('Failed to load full kanji data:', error);
         } finally {
-          setIsLoading(false);
+          // setIsLoading(false);
         }
       }
     };

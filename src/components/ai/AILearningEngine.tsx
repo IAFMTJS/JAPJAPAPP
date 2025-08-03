@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 // Removed framer-motion import due to compatibility issues
 import { useStore } from '../../store/useStore';
-import { AIRecommendation, LearningPath, EmotionalState, PredictiveAnalytics } from '../../types';
+import { AIRecommendation, LearningPath, EmotionalState } from '../../types';
 
 interface AILearningEngineProps {
   userId: string;
@@ -23,7 +23,6 @@ const AILearningEngine: React.FC<AILearningEngineProps> = ({
   const { 
     addAIRecommendation, 
     updateAIInsights, 
-    updateLearningPath, 
     updateEmotionalState,
     updatePredictiveAnalytics 
   } = useStore();
@@ -74,7 +73,7 @@ const AILearningEngine: React.FC<AILearningEngineProps> = ({
   };
 
   // Generate AI Recommendations
-  const generateRecommendations = async () => {
+  const generateRecommendations = useCallback(async () => {
     setIsProcessing(true);
     
     try {
@@ -193,7 +192,7 @@ const AILearningEngine: React.FC<AILearningEngineProps> = ({
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [currentProgress, addAIRecommendation, onRecommendationUpdate, updateAIInsights, updatePredictiveAnalytics, onDifficultyAdjustment]);
 
   // Emotional state analysis
   const analyzeEmotionalState = (userBehavior: any) => {
@@ -239,13 +238,13 @@ const AILearningEngine: React.FC<AILearningEngineProps> = ({
     }, 5 * 60 * 1000);
     
     return () => clearInterval(interval);
-  }, [currentProgress]);
+  }, [currentProgress, generateRecommendations, analyzeEmotionalState]);
 
   useEffect(() => {
     // Initial analysis
     generateRecommendations();
     analyzeEmotionalState(currentProgress.userBehavior || {});
-  }, []);
+  }, [generateRecommendations, analyzeEmotionalState, currentProgress.userBehavior]);
 
   return (
     <div

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 // Removed framer-motion import due to compatibility issues
 import { useStore } from '../../store/useStore';
 import { Exercise, ExerciseType } from '../../types';
@@ -29,7 +29,7 @@ const EnhancedExerciseTypes: React.FC<EnhancedExerciseTypesProps> = ({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   
-  const { updateGameState, addXP } = useStore();
+  const { addXP } = useStore();
 
   // Handwriting Recognition
   const initializeHandwriting = () => {
@@ -145,7 +145,6 @@ const EnhancedExerciseTypes: React.FC<EnhancedExerciseTypesProps> = ({
 
   // Sentence Construction
   const initializeSentenceConstruction = () => {
-    const sentence = '私は日本語を勉強しています';
     const parts = ['私は', '日本語を', '勉強して', 'います'];
     const shuffledParts = [...parts].sort(() => Math.random() - 0.5);
     
@@ -176,16 +175,16 @@ const EnhancedExerciseTypes: React.FC<EnhancedExerciseTypesProps> = ({
   };
 
   // Interactive Stories
-  const initializeInteractiveStory = () => {
-    setStoryProgress(0);
-  };
+  // const initializeInteractiveStory = () => {
+  //   setStoryProgress(0);
+  // };
 
   const nextStoryStep = () => {
     setStoryProgress(prev => Math.min(prev + 1, 5));
   };
 
   // Generate Exercise
-  const generateExercise = () => {
+  const generateExercise = useCallback(() => {
     const exercises: Exercise[] = [
       {
         id: '1',
@@ -253,7 +252,7 @@ const EnhancedExerciseTypes: React.FC<EnhancedExerciseTypesProps> = ({
     } else if (randomExercise.type === 'context-cloze') {
       initializeContextLearning();
     }
-  };
+  }, []);
 
   // Check Answer
   const checkAnswer = () => {
@@ -309,7 +308,7 @@ const EnhancedExerciseTypes: React.FC<EnhancedExerciseTypesProps> = ({
 
   useEffect(() => {
     generateExercise();
-  }, []);
+  }, [generateExercise]);
 
   const renderExerciseContent = () => {
     if (!currentExercise) return null;
