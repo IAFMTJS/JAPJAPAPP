@@ -13,7 +13,7 @@ export interface User {
 
 // AI Learning Engine Types
 export interface AIRecommendation {
-  type: 'review' | 'practice' | 'new' | 'challenge';
+  type: 'review' | 'practice' | 'new' | 'challenge' | 'method' | 'schedule';
   priority: 'high' | 'medium' | 'low';
   content: string;
   reason: string;
@@ -21,6 +21,70 @@ export interface AIRecommendation {
   estimatedImpact: number;
   confidence: number;
   timestamp: Date;
+}
+
+// New AI Tutor Types
+export interface AIAchievement {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  unlocked: boolean;
+  progress: number;
+}
+
+export interface AIChallenge {
+  id: string;
+  name: string;
+  description: string;
+  type: 'daily' | 'weekly' | 'monthly';
+  target: number;
+  current: number;
+  reward: string;
+  deadline: Date;
+}
+
+export interface AIExercise {
+  id: string;
+  type: 'visual' | 'auditory' | 'kinesthetic';
+  title: string;
+  description: string;
+  content: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  estimatedTime: number;
+}
+
+export interface AIMnemonic {
+  id: string;
+  character: string;
+  mnemonic: string;
+  visualAid: string;
+  category: 'hiragana' | 'katakana' | 'kanji';
+}
+
+export interface LearningAnalytics {
+  overallAccuracy: number;
+  improvementRate: number;
+  sessionFrequency: number;
+  averageSessionLength: number;
+  motivationLevel: number;
+  weakAreas: string[];
+  strongAreas: string[];
+}
+
+export interface GamificationElements {
+  achievements: AIAchievement[];
+  challenges: AIChallenge[];
+  currentStreak: number;
+  level: number;
+  xp: number;
+}
+
+export interface PersonalizedContent {
+  exercises: AIExercise[];
+  mnemonics: AIMnemonic[];
+  recommendedCharacters: string[];
+  studyTips: string[];
 }
 
 export interface LearningPath {
@@ -61,6 +125,7 @@ export interface EmotionalState {
   stress: 'low' | 'medium' | 'high';
   confidence: number;
   motivation: number;
+  engagement: number; // Added missing property
   lastUpdated: Date;
 }
 
@@ -157,7 +222,14 @@ export type ExerciseType =
   | 'grammar-correction'
   | 'pronunciation-practice'
   | 'listening-comprehension'
-  | 'reading-comprehension';
+  | 'reading-comprehension'
+  | 'memory-game'
+  | 'pattern-recognition'
+  | 'voice-practice'
+  | 'gesture-learning'
+  | 'cultural-context'
+  | 'speed-challenge'
+  | 'combo-exercise';
 
 export interface Progress {
   hiragana: CharacterProgress[];

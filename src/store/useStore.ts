@@ -15,8 +15,46 @@ interface AppState {
   // Learning Progress
   progress: Progress;
   
+  // Enhanced Progress Tracking
+  learningAnalytics: {
+    sessionData: {
+      startTime: Date | null;
+      endTime: Date | null;
+      duration: number; // in minutes
+      exercisesCompleted: number;
+      accuracy: number;
+      charactersPracticed: string[];
+      focusAreas: string[];
+    };
+    dailyProgress: {
+      [date: string]: {
+        totalTime: number;
+        exercisesCompleted: number;
+        accuracy: number;
+        streak: number;
+        achievements: string[];
+        focusAreas: string[];
+      };
+    };
+    weeklyProgress: {
+      [week: string]: {
+        totalTime: number;
+        averageAccuracy: number;
+        exercisesCompleted: number;
+        streakDays: number;
+        improvementRate: number;
+      };
+    };
+    mobileUsage: {
+      sessions: number;
+      totalTime: number;
+      offlineUsage: number;
+      lastSync: Date | null;
+    };
+  };
+  
   // UI State
-  currentSection: 'home' | 'hiragana' | 'katakana' | 'kanji' | 'kanji-flashcards' | 'grammar' | 'quiz' | 'tracker' | 'profile' | 'social' | 'vr' | 'ar' | 'ai-tutor' | 'gamification' | 'exercises';
+  currentSection: 'home' | 'hiragana' | 'katakana' | 'kanji' | 'kanji-flashcards' | 'grammar' | 'quiz' | 'tracker' | 'profile' | 'social' | 'vr' | 'ar' | 'ai-tutor' | 'gamification' | 'exercises' | 'advanced-learning';
   currentLesson: string | null;
   currentExercise: number;
   
@@ -52,32 +90,16 @@ interface AppState {
   updateDailyStats: (stats: Partial<DailyStats>) => void;
   setCurrentSection: (section: AppState['currentSection']) => void;
   setCurrentLesson: (lessonId: string | null) => void;
-  setCurrentExercise: (exerciseIndex: number) => void;
-  updateAudioSettings: (settings: Partial<AudioSettings>) => void;
-  setCurrentQuiz: (quizId: string | null) => void;
-  addQuizResult: (result: QuizResult) => void;
-  setMascotAnimation: (animation: AppState['mascotAnimation']) => void;
-  addXP: (amount: number) => void;
-  incrementStreak: () => void;
-  resetStreak: () => void;
   
-  // AI Learning Engine Actions
-  addAIRecommendation: (recommendation: AIRecommendation) => void;
-  updateAIInsights: (insights: Partial<AIInsights>) => void;
-  updateLearningPath: (path: Partial<LearningPath>) => void;
-  updateEmotionalState: (state: Partial<EmotionalState>) => void;
-  updatePredictiveAnalytics: (analytics: Partial<PredictiveAnalytics>) => void;
-  
-  // Gamification Actions
-  addAchievement: (achievement: Achievement) => void;
-  addBadge: (badge: Badge) => void;
-  updateGameState: (gameState: Partial<GameState>) => void;
-  addChallenge: (challenge: any) => void;
-  completeChallenge: (challengeId: string) => void;
-
-  // Storage optimization
-  cleanupStorage: () => void;
-  resetStorage: () => void;
+  // Enhanced Progress Tracking Actions
+  startLearningSession: () => void;
+  endLearningSession: () => void;
+  trackExerciseCompletion: (exercise: any, result: any, timeSpent: number) => void;
+  trackAIInteraction: (interaction: any) => void;
+  updateMobileUsage: (data: Partial<AppState['learningAnalytics']['mobileUsage']>) => void;
+  syncProgress: () => Promise<void>;
+  exportProgress: () => string;
+  importProgress: (data: string) => boolean;
 }
 
 const defaultUser: User = {
@@ -148,6 +170,7 @@ const defaultEmotionalState: EmotionalState = {
   stress: 'low',
   confidence: 50,
   motivation: 50,
+  engagement: 50,
   lastUpdated: new Date(),
 };
 
@@ -176,6 +199,26 @@ const defaultGameState: GameState = {
   lessonsCompleted: 0,
 };
 
+const defaultLearningAnalytics = {
+  sessionData: {
+    startTime: null,
+    endTime: null,
+    duration: 0,
+    exercisesCompleted: 0,
+    accuracy: 0,
+    charactersPracticed: [],
+    focusAreas: [],
+  },
+  dailyProgress: {},
+  weeklyProgress: {},
+  mobileUsage: {
+    sessions: 0,
+    totalTime: 0,
+    offlineUsage: 0,
+    lastSync: null,
+  },
+};
+
 export const useStore = create<AppState>()(
   persist(
     (set, get) => ({
@@ -183,6 +226,7 @@ export const useStore = create<AppState>()(
       user: defaultUser,
       isAuthenticated: false,
       progress: defaultProgress,
+      learningAnalytics: defaultLearningAnalytics,
       currentSection: 'home',
       currentLesson: null,
       currentExercise: 0,
@@ -207,75 +251,32 @@ export const useStore = create<AppState>()(
       // Migration function to fix corrupted data
       migrateData: () => {
         const state = get();
-        let needsUpdate = false;
-        const updatedProgress = { ...state.progress };
+        let hasChanges = false;
 
-        // Fix practiceSessions if it's not an array
-        if (!Array.isArray(updatedProgress.practiceSessions)) {
-          updatedProgress.practiceSessions = [];
-          needsUpdate = true;
+        // Ensure progress structure is correct
+        if (!state.progress.hiragana || !Array.isArray(state.progress.hiragana)) {
+          state.progress.hiragana = [];
+          hasChanges = true;
+        }
+        if (!state.progress.katakana || !Array.isArray(state.progress.katakana)) {
+          state.progress.katakana = [];
+          hasChanges = true;
+        }
+        if (!state.progress.kanji || !Array.isArray(state.progress.kanji)) {
+          state.progress.kanji = [];
+          hasChanges = true;
+        }
+        if (!state.progress.grammar || !Array.isArray(state.progress.grammar)) {
+          state.progress.grammar = [];
+          hasChanges = true;
         }
 
-        // Fix dailyStats if it's not an array
-        if (!Array.isArray(updatedProgress.dailyStats)) {
-          updatedProgress.dailyStats = [];
-          needsUpdate = true;
-        }
-
-        // Fix other progress arrays if they're not arrays
-        ['hiragana', 'katakana', 'kanji', 'grammar'].forEach(type => {
-          if (!Array.isArray(updatedProgress[type as keyof Progress])) {
-            (updatedProgress as any)[type] = [];
-            needsUpdate = true;
-          }
-        });
-
-        if (needsUpdate) {
-          set({ progress: updatedProgress });
+        if (hasChanges) {
+          set({ progress: state.progress });
         }
       },
 
-      // Storage cleanup function
-      cleanupStorage: () => {
-        const state = get();
-        const cleanedState = cleanupStorageUtil(state);
-        set(cleanedState);
-        showStorageWarning('Storage cleaned up successfully!');
-      },
-
-      // Emergency storage reset function
-      resetStorage: () => {
-        try {
-          localStorage.removeItem('japjap-storage');
-          set({
-            user: defaultUser,
-            isAuthenticated: false,
-            progress: defaultProgress,
-            currentSection: 'home',
-            currentLesson: null,
-            currentExercise: 0,
-            audioSettings: defaultAudioSettings,
-            currentQuiz: null,
-            quizResults: [],
-            mascotAnimation: 'idle',
-            aiRecommendations: [],
-            aiInsights: defaultAIInsights,
-            learningPath: defaultLearningPath,
-            emotionalState: defaultEmotionalState,
-            predictiveAnalytics: defaultPredictiveAnalytics,
-            gameState: defaultGameState,
-            achievements: [],
-            badges: [],
-            challenges: [],
-          });
-        } catch (error) {
-          console.error('Failed to reset storage:', error);
-        }
-      },
-
-      // Actions
       setUser: (user) => set({ user }),
-      
       setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
       
       updateProgress: (type, characterId, mastered, correct = true, timeSpent = 0) => {
@@ -315,7 +316,21 @@ export const useStore = create<AppState>()(
           // Add new progress entry based on type
           let newProgress: any;
           
-          if (type === 'grammar') {
+          if (type === 'kanji') {
+            newProgress = {
+              character: characterId,
+              mastered,
+              practiceCount: 1,
+              lastPracticed: new Date(),
+              correctAnswers: correct ? 1 : 0,
+              totalAttempts: 1,
+              accuracy: correct ? 100 : 0,
+              timeSpent,
+              strokeOrder: [],
+              readings: [],
+              meanings: [],
+            };
+          } else if (type === 'grammar') {
             newProgress = {
               topic: characterId,
               mastered,
@@ -325,33 +340,10 @@ export const useStore = create<AppState>()(
               totalAttempts: 1,
               accuracy: correct ? 100 : 0,
               timeSpent,
-              difficulty: 'easy',
-              category: 'basic',
-            };
-          } else if (type === 'kanji') {
-            newProgress = {
-              character: characterId,
-              mastered,
-              practiceCount: 1,
-              lastPracticed: new Date(),
-              correctAnswers: correct ? 1 : 0,
-              totalAttempts: 1,
-              accuracy: correct ? 100 : 0,
-              timeSpent,
-              difficulty: 'easy',
-              category: 'basic',
-              strokeOrder: false,
-              readings: false,
-              meaning: false,
-              strokeOrderAttempts: 0,
-              readingAttempts: 0,
-              meaningAttempts: 0,
-              strokeOrderAccuracy: 0,
-              readingAccuracy: 0,
-              meaningAccuracy: 0,
+              examples: [],
+              rules: [],
             };
           } else {
-            // hiragana and katakana
             newProgress = {
               character: characterId,
               mastered,
@@ -361,8 +353,6 @@ export const useStore = create<AppState>()(
               totalAttempts: 1,
               accuracy: correct ? 100 : 0,
               timeSpent,
-              difficulty: 'easy',
-              category: 'basic',
             };
           }
           
@@ -374,199 +364,238 @@ export const useStore = create<AppState>()(
           }));
         }
       },
-      
+
       addPracticeSession: (session) => {
-        set((state) => {
-          // Ensure practiceSessions is always an array
-          const currentSessions = Array.isArray(state.progress.practiceSessions) 
-            ? state.progress.practiceSessions 
-            : [];
-          
-          // Clean up old sessions if we have too many
-          const cleanedSessions = currentSessions.length > 50 
-            ? currentSessions.slice(-50) 
-            : currentSessions;
-          
-          return {
-            progress: {
-              ...state.progress,
-              practiceSessions: [...cleanedSessions, session],
-              totalPracticeTime: state.progress.totalPracticeTime + (session.duration / 60),
-              totalCharactersPracticed: state.progress.totalCharactersPracticed + session.charactersPracticed.length,
-            },
-          };
-        });
+        set((state) => ({
+          progress: {
+            ...state.progress,
+            practiceSessions: [...state.progress.practiceSessions, session],
+          },
+        }));
       },
-      
+
       updateDailyStats: (stats) => {
         const today = new Date().toISOString().split('T')[0];
         set((state) => {
-          // Ensure dailyStats is always an array
-          const currentStats = Array.isArray(state.progress.dailyStats) 
-            ? state.progress.dailyStats 
-            : [];
+          const currentStats = state.progress.dailyStats.find(s => s.date === today);
+          const updatedStats = currentStats 
+            ? { 
+                ...currentStats, 
+                ...stats,
+                totalPracticeTime: stats.totalPracticeTime ?? currentStats.totalPracticeTime,
+                charactersPracticed: stats.charactersPracticed ?? currentStats.charactersPracticed,
+                accuracy: stats.accuracy ?? currentStats.accuracy,
+                streak: stats.streak ?? currentStats.streak,
+                xpGained: stats.xpGained ?? currentStats.xpGained,
+                sessions: stats.sessions ?? currentStats.sessions,
+              }
+            : { 
+                date: today, 
+                totalPracticeTime: stats.totalPracticeTime ?? 0,
+                charactersPracticed: stats.charactersPracticed ?? 0,
+                accuracy: stats.accuracy ?? 0,
+                streak: stats.streak ?? 0,
+                xpGained: stats.xpGained ?? 0,
+                sessions: stats.sessions ?? [],
+              };
           
-          const existingStatsIndex = currentStats.findIndex(s => s.date === today);
-          const updatedStats = [...currentStats];
-          
-          if (existingStatsIndex >= 0) {
-            updatedStats[existingStatsIndex] = { ...updatedStats[existingStatsIndex], ...stats };
-          } else {
-            updatedStats.push({
-              date: today,
-              totalPracticeTime: 0,
-              charactersPracticed: 0,
-              accuracy: 0,
-              streak: 0,
-              xpGained: 0,
-              sessions: [],
-              ...stats,
-            });
-          }
-          
+          const otherStats = state.progress.dailyStats.filter(s => s.date !== today);
           return {
             progress: {
               ...state.progress,
-              dailyStats: updatedStats,
-              lastPracticeDate: today,
+              dailyStats: [...otherStats, updatedStats],
             },
           };
         });
       },
-      
+
       setCurrentSection: (section) => set({ currentSection: section }),
-      
       setCurrentLesson: (lessonId) => set({ currentLesson: lessonId }),
-      
-      setCurrentExercise: (exerciseIndex) => set({ currentExercise: exerciseIndex }),
-      
-      updateAudioSettings: (settings) => {
-        set((state) => ({
-          audioSettings: { ...state.audioSettings, ...settings },
-        }));
-      },
-      
-      setCurrentQuiz: (quizId) => set({ currentQuiz: quizId }),
-      
-      addQuizResult: (result) => {
-        set((state) => {
-          // Clean up old quiz results if we have too many
-          const cleanedResults = state.quizResults.length > 100 
-            ? state.quizResults.slice(-100) 
-            : state.quizResults;
-          
-          return {
-            quizResults: [...cleanedResults, result],
-          };
-        });
-      },
-      
-      setMascotAnimation: (animation) => set({ mascotAnimation: animation }),
-      
-      addXP: (amount) => {
-        set((state) => {
-          if (!state.user) return state;
-          
-          const newXP = state.user.xp + amount;
-          const newLevel = Math.floor(newXP / 100) + 1;
-          
-          return {
-            user: {
-              ...state.user,
-              xp: newXP,
-              level: newLevel,
-            },
-          };
-        });
-      },
-      
-      incrementStreak: () => {
-        set((state) => {
-          if (!state.user) return state;
-          
-          return {
-            user: {
-              ...state.user,
-              streak: state.user.streak + 1,
-            },
-          };
-        });
-      },
-      
-      resetStreak: () => {
-        set((state) => {
-          if (!state.user) return state;
-          
-          return {
-            user: {
-              ...state.user,
-              streak: 0,
-            },
-          };
-        });
-      },
 
-      // AI Learning Engine Actions
-      addAIRecommendation: (recommendation) => {
-        set((state) => {
-          // Clean up old recommendations if we have too many
-          const cleanedRecommendations = state.aiRecommendations.length > 20 
-            ? state.aiRecommendations.slice(-20) 
-            : state.aiRecommendations;
-          
-          return {
-            aiRecommendations: [...cleanedRecommendations, recommendation],
-          };
-        });
-      },
-      updateAIInsights: (insights) => {
+      // Enhanced Progress Tracking Actions
+      startLearningSession: () => {
         set((state) => ({
-          aiInsights: { ...state.aiInsights, ...insights },
-        }));
-      },
-      updateLearningPath: (path) => {
-        set((state) => ({
-          learningPath: { ...state.learningPath, ...path },
-        }));
-      },
-      updateEmotionalState: (emotionalUpdate) => {
-        set((state) => ({
-          emotionalState: { ...state.emotionalState, ...emotionalUpdate },
-        }));
-      },
-      updatePredictiveAnalytics: (analytics) => {
-        set((state) => ({
-          predictiveAnalytics: { ...state.predictiveAnalytics, ...analytics },
+          learningAnalytics: {
+            ...state.learningAnalytics,
+            sessionData: {
+              ...state.learningAnalytics.sessionData,
+              startTime: new Date(),
+              exercisesCompleted: 0,
+              accuracy: 0,
+              charactersPracticed: [],
+              focusAreas: [],
+            },
+          },
         }));
       },
 
-      // Gamification Actions
-      addAchievement: (achievement) => {
+      endLearningSession: () => {
+        const state = get();
+        const sessionData = state.learningAnalytics.sessionData;
+        
+        if (sessionData.startTime) {
+          const endTime = new Date();
+          const duration = Math.round((endTime.getTime() - sessionData.startTime.getTime()) / 60000); // minutes
+          
+          // Update session data
+          set((state) => ({
+            learningAnalytics: {
+              ...state.learningAnalytics,
+              sessionData: {
+                ...sessionData,
+                endTime,
+                duration,
+              },
+            },
+          }));
+
+          // Update daily progress
+          const today = new Date().toISOString().split('T')[0];
+          const currentDaily = state.learningAnalytics.dailyProgress[today] || {
+            totalTime: 0,
+            exercisesCompleted: 0,
+            accuracy: 0,
+            streak: 0,
+            achievements: [],
+            focusAreas: [],
+          };
+
+          const updatedDaily = {
+            ...currentDaily,
+            totalTime: currentDaily.totalTime + duration,
+            exercisesCompleted: currentDaily.exercisesCompleted + sessionData.exercisesCompleted,
+            accuracy: sessionData.exercisesCompleted > 0 
+              ? (currentDaily.accuracy + sessionData.accuracy) / 2 
+              : currentDaily.accuracy,
+            focusAreas: Array.from(new Set([...currentDaily.focusAreas, ...sessionData.focusAreas])),
+          };
+
+          set((state) => ({
+            learningAnalytics: {
+              ...state.learningAnalytics,
+              dailyProgress: {
+                ...state.learningAnalytics.dailyProgress,
+                [today]: updatedDaily,
+              },
+            },
+          }));
+        }
+      },
+
+      trackExerciseCompletion: (exercise, result, timeSpent) => {
+        const state = get();
+        const sessionData = state.learningAnalytics.sessionData;
+        
         set((state) => ({
-          achievements: [...state.achievements, achievement],
+          learningAnalytics: {
+            ...state.learningAnalytics,
+            sessionData: {
+              ...sessionData,
+              exercisesCompleted: sessionData.exercisesCompleted + 1,
+              accuracy: sessionData.exercisesCompleted > 0 
+                ? (sessionData.accuracy + (result.correct ? 100 : 0)) / (sessionData.exercisesCompleted + 1)
+                : (result.correct ? 100 : 0),
+              charactersPracticed: Array.from(new Set([...sessionData.charactersPracticed, ...(result.characters || [])])),
+              focusAreas: Array.from(new Set([...sessionData.focusAreas, exercise.type || 'general'])),
+            },
+          },
         }));
       },
-      addBadge: (badge) => {
+
+      trackAIInteraction: (interaction) => {
+        // Track AI tutor interactions for analytics
+        const state = get();
+        const today = new Date().toISOString().split('T')[0];
+        const currentDaily = state.learningAnalytics.dailyProgress[today] || {
+          totalTime: 0,
+          exercisesCompleted: 0,
+          accuracy: 0,
+          streak: 0,
+          achievements: [],
+          focusAreas: [],
+        };
+
         set((state) => ({
-          badges: [...state.badges, badge],
+          learningAnalytics: {
+            ...state.learningAnalytics,
+            dailyProgress: {
+              ...state.learningAnalytics.dailyProgress,
+              [today]: {
+                ...currentDaily,
+                focusAreas: Array.from(new Set([...currentDaily.focusAreas, 'ai-tutor'])),
+              },
+            },
+          },
         }));
       },
-      updateGameState: (gameState) => {
+
+      updateMobileUsage: (data) => {
         set((state) => ({
-          gameState: { ...state.gameState, ...gameState },
+          learningAnalytics: {
+            ...state.learningAnalytics,
+            mobileUsage: {
+              ...state.learningAnalytics.mobileUsage,
+              ...data,
+            },
+          },
         }));
       },
-      addChallenge: (challenge) => {
-        set((state) => ({
-          challenges: [...state.challenges, challenge],
-        }));
+
+      syncProgress: async () => {
+        // Simulate syncing progress to cloud/backend
+        const state = get();
+        try {
+          // In a real app, this would sync with a backend service
+          console.log('Syncing progress...', state.learningAnalytics);
+          
+          set((state) => ({
+            learningAnalytics: {
+              ...state.learningAnalytics,
+              mobileUsage: {
+                ...state.learningAnalytics.mobileUsage,
+                lastSync: new Date(),
+              },
+            },
+          }));
+          
+          return Promise.resolve();
+        } catch (error) {
+          console.error('Failed to sync progress:', error);
+          return Promise.reject(error);
+        }
       },
-      completeChallenge: (challengeId) => {
-        set((state) => ({
-          challenges: state.challenges.map(challenge => 
-            challenge.id === challengeId ? { ...challenge, completed: true } : challenge
-          ),
-        }));
+
+      exportProgress: () => {
+        const state = get();
+        const exportData = {
+          progress: state.progress,
+          learningAnalytics: state.learningAnalytics,
+          gameState: state.gameState,
+          achievements: state.achievements,
+          badges: state.badges,
+          exportDate: new Date().toISOString(),
+        };
+        return JSON.stringify(exportData, null, 2);
+      },
+
+      importProgress: (data) => {
+        try {
+          const importData = JSON.parse(data);
+          if (importData.progress && importData.learningAnalytics) {
+            set((state) => ({
+              progress: { ...state.progress, ...importData.progress },
+              learningAnalytics: { ...state.learningAnalytics, ...importData.learningAnalytics },
+              gameState: importData.gameState || state.gameState,
+              achievements: importData.achievements || state.achievements,
+              badges: importData.badges || state.badges,
+            }));
+            return true;
+          }
+          return false;
+        } catch (error) {
+          console.error('Failed to import progress:', error);
+          return false;
+        }
       },
     }),
     {
@@ -575,6 +604,7 @@ export const useStore = create<AppState>()(
         const partialized = {
           user: state.user,
           progress: state.progress,
+          learningAnalytics: state.learningAnalytics,
           audioSettings: state.audioSettings,
           quizResults: state.quizResults,
           // AI Learning Engine
@@ -608,5 +638,6 @@ export const useStore = create<AppState>()(
 export const useUser = () => useStore((state) => state.user);
 export const useProgress = () => useStore((state) => state.progress);
 export const useCurrentSection = () => useStore((state) => state.currentSection);
+export const useSetCurrentSection = () => useStore((state) => state.setCurrentSection);
 export const useAudioSettings = () => useStore((state) => state.audioSettings);
 export const useMascotAnimation = () => useStore((state) => state.mascotAnimation); 
