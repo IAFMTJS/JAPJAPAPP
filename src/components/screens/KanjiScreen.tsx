@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore, useProgress } from '../../store/useStore';
-import { getKanjiByCategory, getKanjiByGrade, searchKanji } from '../../data/kanji';
+import { basicKanjiData, getAllKanjiData } from '../../data';
 import { KanjiCharacter } from '../../types';
 import { speakJapanese } from '../../utils/speech';
 
@@ -12,6 +12,8 @@ const KanjiScreen: React.FC = () => {
   const [selectedKanji, setSelectedKanji] = useState<KanjiCharacter | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentStroke, setCurrentStroke] = useState(0);
+  const [allKanjiData, setAllKanjiData] = useState<KanjiCharacter[]>(basicKanjiData);
+  const [isLoading, setIsLoading] = useState(false);
 
   const categories = [
     { id: 'numbers', name: 'Numbers', color: 'japanese-red', count: 5 },
@@ -29,6 +31,25 @@ const KanjiScreen: React.FC = () => {
   ];
 
   const grades = [1, 2, 3];
+
+  // Helper functions for filtering kanji
+  const getKanjiByCategory = (category: string): KanjiCharacter[] => {
+    return allKanjiData.filter(kanji => kanji.category === category);
+  };
+
+  const getKanjiByGrade = (grade: number): KanjiCharacter[] => {
+    return allKanjiData.filter(kanji => kanji.grade === grade);
+  };
+
+  const searchKanji = (query: string): KanjiCharacter[] => {
+    const lowercaseQuery = query.toLowerCase();
+    return allKanjiData.filter(kanji => 
+      kanji.character.includes(query) ||
+      kanji.meaning.toLowerCase().includes(lowercaseQuery) ||
+      kanji.onyomi.includes(query) ||
+      kanji.kunyomi.includes(query)
+    );
+  };
 
   const currentKanji = searchQuery 
     ? searchKanji(searchQuery)
@@ -73,6 +94,25 @@ const KanjiScreen: React.FC = () => {
     const total = 300; // Total kanji to learn
     return (completed / total) * 100;
   };
+
+  // Load full kanji data when component mounts
+  useEffect(() => {
+    const loadFullData = async () => {
+      if (allKanjiData.length === basicKanjiData.length) {
+        setIsLoading(true);
+        try {
+          const fullData = await getAllKanjiData();
+          setAllKanjiData(fullData);
+        } catch (error) {
+          console.error('Failed to load full kanji data:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadFullData();
+  }, [allKanjiData.length]);
 
   return (
     <div className="min-h-screen p-8 relative">

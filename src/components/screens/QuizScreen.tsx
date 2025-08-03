@@ -3,7 +3,7 @@ import { useStore, useProgress } from '../../store/useStore';
 import { Exercise, ExerciseType } from '../../types';
 import { hiraganaData } from '../../data/hiragana';
 import { katakanaData } from '../../data/katakana';
-import { kanjiData } from '../../data/kanji';
+import { basicKanjiData, getAllKanjiData } from '../../data';
 import { speakJapanese } from '../../utils/speech';
 
 const QuizScreen: React.FC = () => {
@@ -21,6 +21,8 @@ const QuizScreen: React.FC = () => {
   const [isQuizActive, setIsQuizActive] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
   const [mistakes, setMistakes] = useState<Array<{questionId: string, question: string, userAnswer: string, correctAnswer: string, explanation: string}>>([]);
+  const [allKanjiData, setAllKanjiData] = useState(basicKanjiData);
+  const [isLoadingKanji, setIsLoadingKanji] = useState(false);
 
   const exerciseTypes: { type: ExerciseType; name: string; description: string; icon: string }[] = [
     { type: 'flashcard', name: 'Flashcards', description: 'Learn with visual cards', icon: '🃏' },
@@ -197,7 +199,7 @@ const QuizScreen: React.FC = () => {
   };
 
   const generateKanjiExercise = (type: ExerciseType): Exercise => {
-    const characters = kanjiData;
+    const characters = allKanjiData;
     const randomChar = characters[Math.floor(Math.random() * characters.length)];
     
     switch (type) {
@@ -313,6 +315,25 @@ const QuizScreen: React.FC = () => {
     const randomCategory = categories[Math.floor(Math.random() * categories.length)];
     return generateExercise(randomCategory, type);
   };
+
+  // Load full kanji data when component mounts or when kanji category is selected
+  useEffect(() => {
+    const loadFullKanjiData = async () => {
+      if (allKanjiData.length === basicKanjiData.length && (selectedCategory === 'kanji' || selectedCategory === 'mixed')) {
+        setIsLoadingKanji(true);
+        try {
+          const fullData = await getAllKanjiData();
+          setAllKanjiData(fullData);
+        } catch (error) {
+          console.error('Failed to load full kanji data:', error);
+        } finally {
+          setIsLoadingKanji(false);
+        }
+      }
+    };
+
+    loadFullKanjiData();
+  }, [selectedCategory, allKanjiData.length]);
 
   const startQuiz = () => {
     setIsQuizActive(true);

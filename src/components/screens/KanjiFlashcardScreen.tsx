@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useStore } from '../../store/useStore';
-import { kanjiData, getKanjiByCategory, getKanjiByGrade } from '../../data/kanji';
+import { basicKanjiData, getAllKanjiData } from '../../data';
 import { KanjiCharacter } from '../../types';
 import { speakJapanese } from '../../utils/speech';
 
@@ -11,12 +11,23 @@ const KanjiFlashcardScreen: React.FC = () => {
   const [studyMode, setStudyMode] = useState<'all' | 'category' | 'grade'>('all');
   const [selectedCategory, setSelectedCategory] = useState('numbers');
   const [selectedGrade, setSelectedGrade] = useState(1);
-  const [filteredKanji, setFilteredKanji] = useState<KanjiCharacter[]>(kanjiData);
+  const [allKanjiData, setAllKanjiData] = useState<KanjiCharacter[]>(basicKanjiData);
+  const [filteredKanji, setFilteredKanji] = useState<KanjiCharacter[]>(basicKanjiData);
+  const [isLoading, setIsLoading] = useState(false);
   const [studyStats, setStudyStats] = useState({
     correct: 0,
     total: 0,
     streak: 0,
   });
+
+  // Helper functions for filtering kanji
+  const getKanjiByCategory = (category: string): KanjiCharacter[] => {
+    return allKanjiData.filter(kanji => kanji.category === category);
+  };
+
+  const getKanjiByGrade = (grade: number): KanjiCharacter[] => {
+    return allKanjiData.filter(kanji => kanji.grade === grade);
+  };
 
   const updateFilteredKanji = useCallback(() => {
     let filtered: KanjiCharacter[];
@@ -28,12 +39,31 @@ const KanjiFlashcardScreen: React.FC = () => {
         filtered = getKanjiByGrade(selectedGrade);
         break;
       default:
-        filtered = kanjiData;
+        filtered = allKanjiData;
     }
     setFilteredKanji(filtered);
     setCurrentKanjiIndex(0);
     setShowAnswer(false);
-  }, [studyMode, selectedCategory, selectedGrade]);
+  }, [studyMode, selectedCategory, selectedGrade, allKanjiData]);
+
+  // Load full kanji data when component mounts
+  useEffect(() => {
+    const loadFullData = async () => {
+      if (allKanjiData.length === basicKanjiData.length) {
+        setIsLoading(true);
+        try {
+          const fullData = await getAllKanjiData();
+          setAllKanjiData(fullData);
+        } catch (error) {
+          console.error('Failed to load full kanji data:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadFullData();
+  }, [allKanjiData.length]);
 
   useEffect(() => {
     updateFilteredKanji();
