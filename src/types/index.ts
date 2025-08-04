@@ -25,7 +25,7 @@ export interface User {
   level: number;
   xp: number;
   streak: number;
-  language: 'nl' | 'en';
+  language: 'en' | 'ja' | 'es' | 'fr' | 'de' | 'zh' | 'ko';
   theme: 'light' | 'dark';
   difficulty: 'beginner' | 'intermediate' | 'advanced';
 }

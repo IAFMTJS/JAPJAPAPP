@@ -1,0 +1,43 @@
+{
+  "app": {
+    "name": "JapJap",
+    "loading": "로딩 중...",
+    "error": "오류",
+    "back": "뒤로",
+    "next": "다음",
+    "previous": "이전",
+    "close": "닫기",
+    "save": "저장",
+    "cancel": "취소",
+    "confirm": "확인",
+    "dismiss": "닫기"
+  },
+  "navigation": {
+    "home": "홈",
+    "hiragana": "히라가나",
+    "katakana": "카타카나",
+    "kanji": "한자",
+    "grammar": "문법",
+    "quiz": "퀴즈",
+    "progress": "진도",
+    "profile": "프로필",
+    "aiTutor": "AI 튜터",
+    "advancedLearning": "고급 학습",
+    "gamification": "게이미피케이션",
+    "exercises": "연습문제",
+    "social": "소셜",
+    "vr": "VR",
+    "ar": "AR",
+    "menu": "메뉴",
+    "swipeToNavigate": "스와이프하여 이동"
+  },
+  "languages": {
+    "en": "English",
+    "ja": "日本語",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "zh": "中文",
+    "ko": "한국어"
+  }
+} 

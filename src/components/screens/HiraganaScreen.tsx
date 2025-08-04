@@ -1,14 +1,28 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useStore } from '../../store/useStore';
 import { hiraganaData, getHiraganaByCategory } from '../../data/hiragana';
 import { speakJapanese } from '../../utils/speech';
 
 const HiraganaScreen: React.FC = () => {
+  const { t, ready } = useTranslation();
   const { setCurrentSection, setMascotAnimation, addXP, updateProgress } = useStore();
   const [selectedCategory, setSelectedCategory] = useState<'basic' | 'dakuten' | 'handakuten' | 'yoon'>('basic');
   const [currentCharacterIndex, setCurrentCharacterIndex] = useState(0);
   const [showRomaji, setShowRomaji] = useState(false);
   const [showAudio, setShowAudio] = useState(false);
+
+  // Don't render until i18n is ready
+  if (!ready) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   const currentCharacters = getHiraganaByCategory(selectedCategory);
   const currentCharacter = currentCharacters[currentCharacterIndex];
@@ -24,10 +38,10 @@ const HiraganaScreen: React.FC = () => {
   };
 
   const categories = [
-    { id: 'basic', name: 'Basic', count: 46, color: 'japanese-red' },
-    { id: 'dakuten', name: 'Dakuten', count: 20, color: 'japanese-blue' },
-    { id: 'handakuten', name: 'Handakuten', count: 5, color: 'japanese-green' },
-    { id: 'yoon', name: 'Yoon', count: 33, color: 'japanese-purple' },
+    { id: 'basic', name: t('hiragana.categories.basic', 'Basic'), count: 46, color: 'japanese-red' },
+    { id: 'dakuten', name: t('hiragana.categories.dakuten', 'Dakuten'), count: 20, color: 'japanese-blue' },
+    { id: 'handakuten', name: t('hiragana.categories.handakuten', 'Handakuten'), count: 5, color: 'japanese-green' },
+    { id: 'yoon', name: t('hiragana.categories.yoon', 'Yoon'), count: 33, color: 'japanese-purple' },
   ];
 
   return (
@@ -37,15 +51,15 @@ const HiraganaScreen: React.FC = () => {
         <div className="bg-white rounded-2xl p-6 mb-8 shadow-lg">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-japanese-red mb-2">Hiragana Learning</h1>
-              <p className="text-gray-600">Master the basic Japanese syllabary</p>
+              <h1 className="text-3xl font-bold text-japanese-red mb-2">{t('hiragana.title', 'Hiragana Learning')}</h1>
+              <p className="text-gray-600">{t('hiragana.description', 'Master the basic Japanese syllabary')}</p>
             </div>
-            <button
-              onClick={() => setCurrentSection('home')}
-              className="bg-gray-100 hover:bg-gray-200 p-3 rounded-full transition-colors"
-            >
-              ← Back
-            </button>
+                          <button
+                onClick={() => setCurrentSection('home')}
+                className="bg-gray-100 hover:bg-gray-200 p-3 rounded-full transition-colors"
+              >
+                ← {t('app.back', 'Back')}
+              </button>
           </div>
         </div>
 
@@ -65,7 +79,7 @@ const HiraganaScreen: React.FC = () => {
               }`}
             >
               <div className="text-2xl font-bold mb-1">{category.name}</div>
-              <div className="text-sm opacity-75">{category.count} chars</div>
+                              <div className="text-sm opacity-75">{category.count} {t('hiragana.characters', 'chars')}</div>
             </button>
           ))}
         </div>
@@ -73,9 +87,9 @@ const HiraganaScreen: React.FC = () => {
         {/* Exercise Mode Toggle */}
         <div className="bg-white rounded-2xl p-6 shadow-lg mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">
-              {categories.find(c => c.id === selectedCategory)?.name} Hiragana
-            </h2>
+                          <h2 className="text-2xl font-bold">
+                {categories.find(c => c.id === selectedCategory)?.name} {t('hiragana.title', 'Hiragana')}
+              </h2>
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setShowRomaji(!showRomaji)}
@@ -85,7 +99,7 @@ const HiraganaScreen: React.FC = () => {
                     : 'bg-gray-100 hover:bg-gray-200'
                 }`}
               >
-                {showRomaji ? 'Hide' : 'Show'} Romaji
+                {showRomaji ? t('app.hide', 'Hide') : t('app.show', 'Show')} {t('hiragana.romaji', 'Romaji')}
               </button>
               <button
                 onClick={() => setShowAudio(!showAudio)}
@@ -101,7 +115,7 @@ const HiraganaScreen: React.FC = () => {
                 onClick={() => setCurrentSection('quiz')}
                 className="px-4 py-2 bg-japanese-red text-white rounded-full text-sm font-medium hover:bg-red-600 transition-colors"
               >
-                🧠 Practice Quiz
+                🧠 {t('hiragana.practiceQuiz', 'Practice Quiz')}
               </button>
             </div>
           </div>

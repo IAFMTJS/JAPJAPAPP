@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useStore, useProgress } from '../../store/useStore';
 import { Exercise, ExerciseType } from '../../types';
 import { hiraganaData } from '../../data/hiragana';
@@ -7,6 +8,7 @@ import { basicKanjiData, getAllKanjiData } from '../../data';
 import { speakJapanese } from '../../utils/speech';
 
 const QuizScreen: React.FC = () => {
+  const { t, ready } = useTranslation();
   const progress = useProgress();
   const { setCurrentSection, addXP, addQuizResult, addPracticeSession } = useStore();
   
@@ -22,23 +24,101 @@ const QuizScreen: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [mistakes, setMistakes] = useState<Array<{questionId: string, question: string, userAnswer: string, correctAnswer: string, explanation: string}>>([]);
   const [allKanjiData, setAllKanjiData] = useState(basicKanjiData);
+
+  // Load full kanji data when component mounts or when kanji category is selected
+  useEffect(() => {
+    const loadFullKanjiData = async () => {
+      if (allKanjiData.length === basicKanjiData.length && (selectedCategory === 'kanji' || selectedCategory === 'mixed')) {
+        // setIsLoadingKanji(true);
+        try {
+          const fullData = await getAllKanjiData();
+          setAllKanjiData(fullData);
+        } catch (error) {
+          console.error('Failed to load full kanji data:', error);
+        } finally {
+          // setIsLoadingKanji(false);
+        }
+      }
+    };
+
+    loadFullKanjiData();
+  }, [selectedCategory, allKanjiData.length]);
+
+  const finishQuiz = useCallback(() => {
+    const finalScore = (score / totalQuestions) * 100;
+    const timeTaken = 300 - timeLeft;
+    
+    const quizResult = {
+      quizId: `quiz-${Date.now()}`,
+      score: finalScore,
+      totalQuestions,
+      correctAnswers: score,
+      timeTaken,
+      mistakes,
+      completedAt: new Date()
+    };
+    
+    // Create practice session
+    const practiceSession = {
+      id: `session-${Date.now()}`,
+      type: selectedCategory === 'mixed' ? 'hiragana' : selectedCategory,
+      startTime: new Date(Date.now() - timeTaken * 1000),
+      endTime: new Date(),
+      duration: timeTaken,
+      totalQuestions,
+      correctAnswers: score,
+      accuracy: finalScore,
+      charactersPracticed: currentExercise ? [currentExercise.question.split(' ').pop()?.replace('?', '') || ''] : [],
+      mistakes: mistakes.map(m => m.questionId)
+    };
+    
+    addQuizResult(quizResult);
+    addPracticeSession(practiceSession);
+    addXP(Math.floor(finalScore / 10));
+    setIsQuizActive(false);
+  }, [score, totalQuestions, timeLeft, mistakes, selectedCategory, currentExercise, addQuizResult, addPracticeSession, addXP, setIsQuizActive]);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isQuizActive && timeLeft > 0) {
+      timer = setTimeout(() => {
+        setTimeLeft(timeLeft - 1);
+        if (timeLeft <= 1) {
+          finishQuiz();
+        }
+      }, 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [isQuizActive, timeLeft, finishQuiz]);
+
+  // Don't render until i18n is ready
+  if (!ready) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
   // const [isLoadingKanji, setIsLoadingKanji] = useState(false);
 
   const exerciseTypes: { type: ExerciseType; name: string; description: string; icon: string }[] = [
-    { type: 'flashcard', name: 'Flashcards', description: 'Learn with visual cards', icon: '🃏' },
-    { type: 'multiple-choice', name: 'Multiple Choice', description: 'Choose the correct answer', icon: '☑️' },
-    { type: 'fill-blank', name: 'Fill in the Blank', description: 'Complete missing parts', icon: '✏️' },
-    { type: 'match-sound', name: 'Sound Matching', description: 'Match audio to characters', icon: '🔊' },
-    { type: 'listen-type', name: 'Listen & Type', description: 'Type what you hear', icon: '⌨️' },
-    { type: 'speak-repeat', name: 'Speak & Repeat', description: 'Practice pronunciation', icon: '🎤' }
+    { type: 'flashcard', name: t('quiz.exerciseTypes.flashcard', 'Flashcards'), description: t('quiz.exerciseTypes.flashcardDesc', 'Learn with visual cards'), icon: '🃏' },
+    { type: 'multiple-choice', name: t('quiz.exerciseTypes.multipleChoice', 'Multiple Choice'), description: t('quiz.exerciseTypes.multipleChoiceDesc', 'Choose the correct answer'), icon: '☑️' },
+    { type: 'fill-blank', name: t('quiz.exerciseTypes.fillBlank', 'Fill in the Blank'), description: t('quiz.exerciseTypes.fillBlankDesc', 'Complete missing parts'), icon: '✏️' },
+    { type: 'match-sound', name: t('quiz.exerciseTypes.matchSound', 'Sound Matching'), description: t('quiz.exerciseTypes.matchSoundDesc', 'Match audio to characters'), icon: '🔊' },
+    { type: 'listen-type', name: t('quiz.exerciseTypes.listenType', 'Listen & Type'), description: t('quiz.exerciseTypes.listenTypeDesc', 'Type what you hear'), icon: '⌨️' },
+    { type: 'speak-repeat', name: t('quiz.exerciseTypes.speakRepeat', 'Speak & Repeat'), description: t('quiz.exerciseTypes.speakRepeatDesc', 'Practice pronunciation'), icon: '🎤' }
   ];
 
   const categories = [
-    { id: 'hiragana', name: 'Hiragana', color: 'japanese-red', icon: 'あ' },
-    { id: 'katakana', name: 'Katakana', color: 'japanese-blue', icon: 'ア' },
-    { id: 'kanji', name: 'Kanji', color: 'japanese-green', icon: '水' },
-    { id: 'grammar', name: 'Grammar', color: 'japanese-purple', icon: 'は' },
-    { id: 'mixed', name: 'Mixed', color: 'japanese-gold', icon: '🎯' }
+    { id: 'hiragana', name: t('navigation.hiragana', 'Hiragana'), color: 'japanese-red', icon: 'あ' },
+    { id: 'katakana', name: t('navigation.katakana', 'Katakana'), color: 'japanese-blue', icon: 'ア' },
+    { id: 'kanji', name: t('navigation.kanji', 'Kanji'), color: 'japanese-green', icon: '水' },
+    { id: 'grammar', name: t('navigation.grammar', 'Grammar'), color: 'japanese-purple', icon: 'は' },
+    { id: 'mixed', name: t('quiz.categories.mixed', 'Mixed'), color: 'japanese-gold', icon: '🎯' }
   ];
 
   const generateExercise = (category: string, type: ExerciseType): Exercise => {
@@ -316,25 +396,6 @@ const QuizScreen: React.FC = () => {
     return generateExercise(randomCategory, type);
   };
 
-  // Load full kanji data when component mounts or when kanji category is selected
-  useEffect(() => {
-    const loadFullKanjiData = async () => {
-      if (allKanjiData.length === basicKanjiData.length && (selectedCategory === 'kanji' || selectedCategory === 'mixed')) {
-        // setIsLoadingKanji(true);
-        try {
-          const fullData = await getAllKanjiData();
-          setAllKanjiData(fullData);
-        } catch (error) {
-          console.error('Failed to load full kanji data:', error);
-        } finally {
-          // setIsLoadingKanji(false);
-        }
-      }
-    };
-
-    loadFullKanjiData();
-  }, [selectedCategory, allKanjiData.length]);
-
   const startQuiz = () => {
     setIsQuizActive(true);
     setScore(0);
@@ -405,53 +466,6 @@ const QuizScreen: React.FC = () => {
       finishQuiz();
     }
   };
-
-  const finishQuiz = useCallback(() => {
-    const finalScore = (score / totalQuestions) * 100;
-    const timeTaken = 300 - timeLeft;
-    
-    const quizResult = {
-      quizId: `quiz-${Date.now()}`,
-      score: finalScore,
-      totalQuestions,
-      correctAnswers: score,
-      timeTaken,
-      mistakes,
-      completedAt: new Date()
-    };
-    
-    // Create practice session
-    const practiceSession = {
-      id: `session-${Date.now()}`,
-      type: selectedCategory === 'mixed' ? 'hiragana' : selectedCategory,
-      startTime: new Date(Date.now() - timeTaken * 1000),
-      endTime: new Date(),
-      duration: timeTaken,
-      totalQuestions,
-      correctAnswers: score,
-      accuracy: finalScore,
-      charactersPracticed: currentExercise ? [currentExercise.question.split(' ').pop()?.replace('?', '') || ''] : [],
-      mistakes: mistakes.map(m => m.questionId)
-    };
-    
-    addQuizResult(quizResult);
-    addPracticeSession(practiceSession);
-    addXP(Math.floor(finalScore / 10));
-    setIsQuizActive(false);
-  }, [score, totalQuestions, timeLeft, mistakes, selectedCategory, currentExercise, addQuizResult, addPracticeSession, addXP, setIsQuizActive]);
-
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (isQuizActive && timeLeft > 0) {
-      timer = setTimeout(() => {
-        setTimeLeft(timeLeft - 1);
-        if (timeLeft <= 1) {
-          finishQuiz();
-        }
-      }, 1000);
-    }
-    return () => clearTimeout(timer);
-  }, [isQuizActive, timeLeft, finishQuiz]);
 
   const speakCharacter = (text: string) => {
     speakJapanese(text);

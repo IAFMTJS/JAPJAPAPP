@@ -1,0 +1,43 @@
+{
+  "app": {
+    "name": "JapJap",
+    "loading": "Laden...",
+    "error": "Fehler",
+    "back": "Zurück",
+    "next": "Weiter",
+    "previous": "Zurück",
+    "close": "Schließen",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen",
+    "dismiss": "Verwerfen"
+  },
+  "navigation": {
+    "home": "Startseite",
+    "hiragana": "Hiragana",
+    "katakana": "Katakana",
+    "kanji": "Kanji",
+    "grammar": "Grammatik",
+    "quiz": "Quiz",
+    "progress": "Fortschritt",
+    "profile": "Profil",
+    "aiTutor": "KI-Tutor",
+    "advancedLearning": "Fortgeschrittenes Lernen",
+    "gamification": "Gamifizierung",
+    "exercises": "Übungen",
+    "social": "Sozial",
+    "vr": "VR",
+    "ar": "AR",
+    "menu": "Menü",
+    "swipeToNavigate": "Wischen zum Navigieren"
+  },
+  "languages": {
+    "en": "English",
+    "ja": "日本語",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "zh": "中文",
+    "ko": "한국어"
+  }
+} 

@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useStore, useProgress } from '../../store/useStore';
 import { getKatakanaByCategory } from '../../data/katakana';
 import { KatakanaCharacter } from '../../types';
 import { speakJapanese } from '../../utils/speech';
 
 const KatakanaScreen: React.FC = () => {
+  const { t, ready } = useTranslation();
   const progress = useProgress();
   const { setCurrentSection, addXP } = useStore();
   const [selectedCategory, setSelectedCategory] = useState('basic');
@@ -12,11 +14,23 @@ const KatakanaScreen: React.FC = () => {
   const [showRomaji, setShowRomaji] = useState(false);
   const [showAudio, setShowAudio] = useState(false);
 
+  // Don't render until i18n is ready
+  if (!ready) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   const categories = [
-    { id: 'basic', name: 'Basic', color: 'japanese-blue', count: 46 },
-    { id: 'dakuten', name: 'Dakuten', color: 'japanese-green', count: 20 },
-    { id: 'handakuten', name: 'Handakuten', color: 'japanese-purple', count: 5 },
-    { id: 'yoon', name: 'Yoon', color: 'japanese-gold', count: 33 }
+    { id: 'basic', name: t('katakana.categories.basic', 'Basic'), color: 'japanese-blue', count: 46 },
+    { id: 'dakuten', name: t('katakana.categories.dakuten', 'Dakuten'), color: 'japanese-green', count: 20 },
+    { id: 'handakuten', name: t('katakana.categories.handakuten', 'Handakuten'), color: 'japanese-purple', count: 5 },
+    { id: 'yoon', name: t('katakana.categories.yoon', 'Yoon'), color: 'japanese-gold', count: 33 }
   ];
 
   const currentCharacters = getKatakanaByCategory(selectedCategory);
@@ -57,8 +71,8 @@ const KatakanaScreen: React.FC = () => {
         <div className="glass-card rounded-3xl p-8 mb-8">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-4xl font-bold text-gradient mb-2">カタカナ Katakana</h1>
-              <p className="text-gray-600 text-lg">Learn katakana characters for foreign words</p>
+              <h1 className="text-4xl font-bold text-gradient mb-2">カタカナ {t('katakana.title', 'Katakana')}</h1>
+              <p className="text-gray-600 text-lg">{t('katakana.description', 'Learn katakana characters for foreign words')}</p>
             </div>
             <button
               onClick={() => setCurrentSection('home')}
@@ -71,7 +85,7 @@ const KatakanaScreen: React.FC = () => {
           {/* Progress Bar */}
           <div className="mb-6">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-gray-700">Progress</span>
+              <span className="text-sm font-medium text-gray-700">{t('progress.title', 'Progress')}</span>
               <span className="text-sm font-medium text-gray-700">
                 {(() => {
                   const katakanaProgress = progress.katakana || [];

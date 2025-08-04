@@ -1,0 +1,51 @@
+{
+  "app": {
+    "name": "JapJap",
+    "loading": "Cargando...",
+    "error": "Error",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "close": "Cerrar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "dismiss": "Descartar"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "hiragana": "Hiragana",
+    "katakana": "Katakana",
+    "kanji": "Kanji",
+    "grammar": "Gramática",
+    "quiz": "Cuestionario",
+    "progress": "Progreso",
+    "profile": "Perfil",
+    "aiTutor": "Tutor IA",
+    "advancedLearning": "Aprendizaje Avanzado",
+    "gamification": "Gamificación",
+    "exercises": "Ejercicios",
+    "social": "Social",
+    "vr": "VR",
+    "ar": "AR",
+    "menu": "Menú",
+    "swipeToNavigate": "Desliza para navegar"
+  },
+  "home": {
+    "title": "Bienvenido a JapJap",
+    "subtitle": "¡Aprende japonés de manera divertida!",
+    "description": "Domina los caracteres, gramática y cultura japonesa a través de lecciones interactivas y aprendizaje con IA.",
+    "startLearning": "Comenzar a Aprender",
+    "continueLearning": "Continuar Aprendiendo",
+    "quickStart": "Inicio Rápido"
+  },
+  "languages": {
+    "en": "English",
+    "ja": "日本語",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "zh": "中文",
+    "ko": "한국어"
+  }
+} 

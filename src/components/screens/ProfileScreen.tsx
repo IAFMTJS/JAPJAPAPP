@@ -1,15 +1,29 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useStore, useUser, useAudioSettings } from '../../store/useStore';
 
 const ProfileScreen: React.FC = () => {
+  const { t, ready } = useTranslation();
   const user = useUser();
   const audioSettings = useAudioSettings();
   const { setUser, updateAudioSettings, setCurrentSection } = useStore();
   
   const [selectedAvatar, setSelectedAvatar] = useState<'maneki-neko' | 'penguin-kimono'>(user?.avatar || 'maneki-neko');
-  const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'nl'>(user?.language || 'en');
+  const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'ja' | 'es' | 'fr' | 'de' | 'zh' | 'ko'>(user?.language || 'en');
   const [selectedTheme, setSelectedTheme] = useState(user?.theme || 'light');
   const [difficulty, setDifficulty] = useState<'beginner' | 'intermediate' | 'advanced'>(user?.difficulty || 'beginner');
+
+  // Don't render until i18n is ready
+  if (!ready) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleSaveSettings = () => {
     setUser({
@@ -21,11 +35,11 @@ const ProfileScreen: React.FC = () => {
     });
     
     // Show success message
-    alert('Settings saved successfully! 🎉');
+    alert(t('profile.settingsSaved', 'Settings saved successfully! 🎉'));
   };
 
   const handleResetProgress = () => {
-    if (window.confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
+    if (window.confirm(t('profile.confirmReset', 'Are you sure you want to reset all progress? This cannot be undone.'))) {
       setUser({
         ...user!,
         level: 1,
@@ -34,7 +48,7 @@ const ProfileScreen: React.FC = () => {
       });
       // Reset progress in the store
       // Note: This would need to be implemented in the store if needed
-      alert('Progress reset successfully! 🔄');
+      alert(t('profile.progressReset', 'Progress reset successfully! 🔄'));
     }
   };
 
@@ -51,7 +65,7 @@ const ProfileScreen: React.FC = () => {
         {/* Header */}
         <div className="glass-card rounded-3xl p-8 mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-4xl font-bold text-gradient">Profile & Settings</h1>
+            <h1 className="text-4xl font-bold text-gradient">{t('profile.title', 'Profile & Settings')}</h1>
             <button
               onClick={() => setCurrentSection('home')}
               className="glass-card p-3 rounded-full hover:scale-110 transition-transform"
@@ -121,7 +135,7 @@ const ProfileScreen: React.FC = () => {
                 <label className="block text-lg font-medium text-gray-700 mb-3">Language</label>
                 <select 
                   value={selectedLanguage}
-                  onChange={(e) => setSelectedLanguage(e.target.value as 'en' | 'nl')}
+                  onChange={(e) => setSelectedLanguage(e.target.value as 'en' | 'ja' | 'es' | 'fr' | 'de' | 'zh' | 'ko')}
                   className="input-modern w-full"
                 >
                   <option value="en">English</option>

@@ -1,0 +1,43 @@
+{
+  "app": {
+    "name": "JapJap",
+    "loading": "加载中...",
+    "error": "错误",
+    "back": "返回",
+    "next": "下一步",
+    "previous": "上一步",
+    "close": "关闭",
+    "save": "保存",
+    "cancel": "取消",
+    "confirm": "确认",
+    "dismiss": "关闭"
+  },
+  "navigation": {
+    "home": "首页",
+    "hiragana": "平假名",
+    "katakana": "片假名",
+    "kanji": "汉字",
+    "grammar": "语法",
+    "quiz": "测验",
+    "progress": "进度",
+    "profile": "个人资料",
+    "aiTutor": "AI导师",
+    "advancedLearning": "高级学习",
+    "gamification": "游戏化",
+    "exercises": "练习",
+    "social": "社交",
+    "vr": "VR",
+    "ar": "AR",
+    "menu": "菜单",
+    "swipeToNavigate": "滑动导航"
+  },
+  "languages": {
+    "en": "English",
+    "ja": "日本語",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "zh": "中文",
+    "ko": "한국어"
+  }
+} 
